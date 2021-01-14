@@ -81,14 +81,26 @@
 		}
 		
 		a:link, a:visited {
-			color: #603324;
-			text-shadow: 0 1px 1px rgba(200, 200, 200, 0.3);
+			color: #ccc;
+			text-decoration-skip-ink: auto;
+			text-underline-offset: 2px;
+			/* text-shadow: 0 1px 1px rgba(200, 200, 200, 0.3); */
+		}
+		
+		a:hover, a:focus {
+			background-color: #000;
+			box-shadow: 0 0 0 4px #000;
 		}
 		
 		p.badge a:link,
 		p.badge a:visited {
 			text-decoration: none;
 			color: #fff;
+		}
+		
+		p.badge a:hover {
+			background-color: transparent;
+			box-shadow: none;
 		}
 		
 		h1 {
