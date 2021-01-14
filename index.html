@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<title>Pimp My XSLT</title>
+	<meta charset="utf-8">
+	<meta name="description" content="A collection of articles, tricks, refactorings and best practices in XML, XSLT &amp; XPath.">
+	
+	<style type="text/css" media="screen">
+		html, body { margin: 0; padding: 0; height: 100%; }
+
+		body {
+			background: #000;
+			background: -webkit-gradient(linear, left top, left bottom, from(#000), to(#000), color-stop(0.45, #bcaf75), color-stop(0.5, #fff), color-stop(0.55, #bcaf75));
+			color: #314159;
+			overflow: hidden;
+			font: 85%/1.4 Tahoma, Helvetica, Arial, sans-serif;
+		}
+
+		#splash {
+			background: #1a1a1a url(bg_splash.png) center;
+			width: 800px;
+			height: 600px;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			margin: -300px auto auto -400px;
+			border: 1px solid #000;
+			-webkit-border-radius: 16px;
+			-moz-border-radius: 16px;
+			border-radius: 16px;
+			-webkit-box-shadow: 0 0 100px rgba(188, 175, 117, 6.75);
+			-moz-box-shadow: 0 4px 8px rgba(188, 175, 117, 0.75);
+			box-shadow: 0 4px 8px rgba(188, 175, 117, 0.75);
+		}
+		
+		#splash p {
+			font-size: 1.1em;
+			color: #eee;
+			margin: 0px auto;
+			position: relative;
+			top: 400px;
+			width: 80%;
+			padding: 20px;
+			background: #a7885f;
+			background: -webkit-gradient(linear, left top, left bottom, from(#a7885f), to(#473a29));
+			border: 1px solid #555;
+			-webkit-border-radius: 8px;
+			-moz-border-radius: 8px;
+			border-radius: 8px;
+			-webkit-box-shadow: 0 0 8px rgba(250, 250, 250, 0.3);
+			-moz-box-shadow: 0 0 8px rgba(250, 250, 250, 0.3);
+			box-shadow: 0 0 8px rgba(250, 250, 250, 0.3);
+			text-shadow: 0 1px 1px rgba(25, 25, 25, 0.6);
+		}
+		
+		#splash p.badge {
+			position: absolute;
+			background: #dad338;
+			background: -webkit-gradient(linear, left top, left bottom, from(#f23131), to(#721913));
+			color: #fff;
+			border-color: #fff;
+			border-width: 2px;
+			width: 60px;
+			height: 60px;
+			right: 20px;
+			top: 20px;
+			-webkit-transform: rotate(8deg);
+			-moz-transform: rotate(8deg);
+			-o-transform: rotate(8deg);
+			transform: rotate(8deg);
+			font-size: 0.9em;
+			text-transform: uppercase;
+			text-align: center;
+			-webkit-border-radius: 50px;
+			-moz-border-radius: 50px;
+			border-radius: 50px;
+			
+			-webkit-box-shadow: 0 0 18px rgba(178, 44, 42, 0.9);
+			-moz-box-shadow: 0 4px 8px rgba(178, 44, 42, 0.75);
+			box-shadow: 0 4px 8px rgba(178, 44, 42, 0.75);
+		}
+		
+		a:link, a:visited {
+			color: #603324;
+			text-shadow: 0 1px 1px rgba(200, 200, 200, 0.3);
+		}
+		
+		p.badge a:link,
+		p.badge a:visited {
+			text-decoration: none;
+			color: #fff;
+		}
+		
+		h1 {
+			text-indent: -1000em;
+		}
+		
+		img { display: none; }
+	</style>
+</head>
+<body>
+
+<div id="splash">
+	<h1>Pimp My XSLT</h1>
+	<p class="badge">
+		<a href="/presentations/" title="Get the slides from Codegarden &#8216;10">The slides are online!</a>
+	</p>
+	<p>
+		I&#8217;m currently building this resource, but for now, you can
+		<a href="/articles/" title="Go to the articles section and learn some &#8216;Entity Tricks&#8217;">read a couple of articles,</a> or
+		<a href="/axesviz.aspx" title="Visualize the various possibilities of axes in XPath with this handy tool">play with the XPath Axes Visualizer.</a> Lots more in the pipeline.
+	</p>
+	<img src="bg_splash.png" width="800" height="600" alt="&#8220;Pimp My XSLT&#8221; has great tips on XSLT and related technologies." />
+</div>
+
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11788998-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>

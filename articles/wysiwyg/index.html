@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Unlocking the CDATA-trapped WYSIWYG editor for transforming with XSLT. Article for 'Pimp My XSLT'." />
+	<meta name="viewport" content="width=device-width" />
+	<!--
+		Copyright 2012 by Chriztian Steinmeier, http://greystate.dk/	
+	-->
+	<title>Transforming WYSIWYG output with XSLT @ Pimp My XSLT</title>
+	<link rel="stylesheet" href="../pimp-article.css" type="text/css" media="screen" charset="utf-8" />
+	
+	<link rel="index" href="/articles/" />
+
+	<link rel="canonical" href="/articles/wysiwyg/" />
+	
+	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+
+<div class="article">
+	<h1>Transforming WYSIWYG output with XSLT</h1>
+	<p class="credit">
+		Written by <a href="http://greystate.dk/">Chriztian Steinmeier</a>.<br />
+		Got comments? I&#8217;m <a href="http://twitter.com/greystate" rel="external">@greystate</a> on Twitter.
+		<a href="/articles/" rel="index">&#x2190; Back to Article Index</a>
+	</p>
+	<div class="intro">
+		<p>
+			One of my absolute top pet peeves is the WYSIWYG editor - so here&#8217;s my take on that; Like most of my other
+			articles, it&#8217;s based off an Umbraco feature, but really applicable to XSLT transforms in general, so go ahead
+			<span onclick="alert(this.getAttribute('title'))" style="cursor: help" title="Yep - you got it, it's the &#8216;dash-rocket&#8217; from CoffeeScript making a cameo appearance!">-&gt;</span>
+		</p>
+	</div>
+	
+	<p>One thing I really don&#8217;t get about the WYSIWYG editor found in various Content Management Systems, is the fact that when its
+	contents are saved, they&#8217;re saved as a string of XHTML, wrapped in a strange construct called a <strong>CDATA Section</strong>, which makes
+	it useless in an XSLT context - think about that for a second: The actual <em>content</em> is stored in the <em>least flexible way,</em>
+	with regards to the rendering technology.</p>
+
+	<p>It looks like this:</p>
+
+	<script src="https://gist.github.com/1871555.js?file=wysiwyg-01.xml"></script>
+
+	<p>Embedding RichText content in XML should be fairly simple, right? It is just XML after all, so you really shouldn&#8217;t need to do
+	anything but shove the tags in there? Unfortunately, most of the time, you&#8217;ll see RichText content being wrapped in a CDATA Section,
+	probably because the editing component at some point delivered HTML, which could of course create &#8220;a Paradox in the Space-Time
+	Continuum!&#8221;&#8230;</p>
+
+	<p>Let me tell you why this is bad: The contents of a CDATA Section can <strong>only</strong> be interpreted as <em>pure text</em> - its sole
+	purpose is to mark a section of an XML document as &#8220;Character Data&#8221; which is not to be parsed. So the XML parser will make
+	sure not to confuse the &#8220;&lt;&#8221; signs in that section of the document with the &#8220;&lt;&#8221; signs otherwise used throughout the document
+	(i.e., signaling the start of an element). In fact, to the parser, the above line is identical to this one:</p>
+
+	<script src="https://gist.github.com/1871555.js?file=wysiwyg-02.xml"></script>
+
+	<p>The CDATA Section is just a nice way to not have to escape those characters, and indeed makes it easy to embed code snippets
+	etc. into an XML file. The really sad part is that all that nice, so-called &#8220;Rich Text&#8221; formatting goes out the window as
+	soon as you stick it in a CDATA Section. From then on, you can no longer use the powerful XPath language to say things like:
+	&#8220;Give me all the <code>&lt;p&gt;</code> elements that have a style attribute&#8221; (<code>p[@style]</code>) or: &#8220;I want the <code>&lt;figcaption&gt;</code> of the first
+	<code>&lt;figure&gt;</code> that has a PNG image in it (<code>figure[contains(img/@src, '.png')][1]/figcaption</code>).</p>
+
+	<p>To me, the &#8220;controller&#8221; (or data component) has a crystal clear responsibility here - the render component is using XSLT,
+	so the data component should deliver XML (because that&#8217;s what XSLT eats for breakfast every day). It&#8217;s actually not a hard problem
+	to create XHTML (i.e., valid XML) from HTML (potentially invalid XML), which seems to have been the only reason for doing
+	this CDATA thing in the first place. </p>
+
+	<p>Until that happens, we&#8217;re stuck having to sometimes be really creative when trying to maintain the styles set forth in our
+	style guide for the client. And frankly, I&#8217;m sick and tired of doing that, so here&#8217;s how I&#8217;m handling the RichText Editor these days:</p>
+
+	<h2>The Steps</h2>
+
+	<p>It&#8217;s essentially two steps:</p>
+
+	<ol>
+		<li>Convert the output from the RichText Editor to XML</li>
+		<li>Process the XML as usual (apply-templates, etc.)</li>
+	</ol>
+
+	<p>The second is just another day at the XSLT Office&#8482;, but the first one is of course a bit outside of my territory,
+	since it requires writing an extension - either as an <a href="http://blog.percipientstudios.com/2010/11/12/make-an-app_code-xslt-extension-for-umbraco.aspx" title="&quot;Douglas Robar explains writing an App_Code extension very well here&quot;">App_Code Extension</a> or as a compiled extension.</p>
+
+	<p>At first, I forced <a href="http://twitter.com/kimtho6/">Kim</a>, a former colleague of mine, to write an extension as part of the project we were working on, but
+	then I ran into the obvious solution when dealing with Umbraco&#8230; uComponents, of course!</p>
+
+	<h3>Another one for uComponents</h3>
+
+	<p>There&#8217;s a nice little extension in the <code>ucomponents.xml</code> namespace, called <code>ParseXhtml()</code> <sup id="f1-link"><a href="#f1-methodnames">[1]</a></sup> which simply
+	takes care of converting a string of XHTML into XML, for use in our XSLT. And thanks to <a href="http://twitter.com/leekelleher/">Lee Kelleher</a>, the following paragraph
+	is now hollow and empty, due to him fixing the caveats I ran into with thefirst iteration - and you won&#8217;t have to wade
+	through <a href="http://pimpmyxslt.com/articles/entity-tricks-part1/">entities</a> &#8220;the size of gorillas&#8221; to understand what was going on. Yay Lee, #h5yr! :-)</p>
+
+	<pre><code>&lt;p&gt;&amp;nbsp;&lt;/p&gt;</code></pre>
+
+	<p>&#8220;So what we&#8217;re gonna do is:&#8221;</p>
+
+	<ol>
+		<li>Download and install the uComponents and XSLTouch<sup id="f2-link"><a href="#f2-xsltouch">[2]</a></sup> packages</li>
+		<li>Download <a href="_WYSIWYG.xslt">_WYSIWYG.xslt</a></li>
+		<li>
+			<p>Include _WYSIWYG.xslt in your XSLT file:</p>
+			<pre><code>&lt;xsl:include href="_WYSIWYG.xslt" /&gt;</code></pre>
+		</li>
+		<li>
+			<p>In your XSLT file, replace</p>
+			<pre><code>&lt;xsl:value-of select="bodyText" disable-output-escaping="yes" /&gt;</code></pre>
+
+			<p>with this:</p>
+
+			<pre><code>&lt;xsl:apply-templates select="bodyText" mode="WYSIWYG" /&gt;</code></pre>
+		</li>
+		<li>Yay - you&#8217;re ready to transform the output from the WYSIWYG editor and do all sorts of cool things</li>
+	</ol>
+
+	<h3>_WYSIWYG.xslt</h3>
+
+	<script src="https://gist.github.com/1871555.js?file=wysiwyg-03.xslt"></script>
+	
+	<hr />
+
+	<h2>But why even bother?</h2>
+
+	<p>You may indeed ask that (very legitimate) question - to which I have to say: Because I like delivering great solutions, and every time
+	I see this:</p>
+
+	<script src="https://gist.github.com/1871555.js?file=wysiwyg-04.html"></script>
+
+	<p>I <em>know</em> in my heart that for all intents and purposes, this is what it really means:</p>
+
+	<script src="https://gist.github.com/1871555.js?file=wysiwyg-05.html"></script>
+
+	<p>Unfortunately, [redacted] has taught everyone and their mother how to edit text by assigning colors and sizes instead of structure.
+	But I still want to render the &#8220;correct&#8221; markup for what the editor was trying to do, so I set out to fix the problem for myself.</p>
+
+	<p>Performing that transformation with the CDATA wrapped content would require lots of string manipulation - preferably
+	Regular Expressions (btw.: I do not suffer from Fear of RegExes, but it&#8217;s not the right tool for the job at hand).</p>
+
+	<p>Using <code>_WYSIWYG.xslt</code> I finally have a solution that works great, and which enables me to deliver solutions where the CSS doesn&#8217;t
+	need to jump impossible hoops, trying to keep the formatting, colors, sizes etc.</p>
+
+	<div class="explain">
+		<h2>How it works</h2>
+
+		<p>This very simple chunk of XSLT works by using what&#8217;s known in XSLT as an &#8220;Identity Transform&#8221; &#8212; a set of templates that simply copies
+		the source XML verbatim from the input tree to the output tree; But doing so <em>by processing every node along the way</em>. That enables us to
+		intervene at any given point, to perform some sort of override - e.g. to remove any trace of a <code>&lt;font&gt;</code> tag, we can just create a template
+		that simply continues processing the contents, preserving the text (which shouldn&#8217;t be punished for its creator wrapping that horrid element
+		around it, no?) :</p>
+
+		<pre><code>&lt;xsl:template match="font | FONT"&gt;
+	&lt;xsl:apply-templates /&gt;
+&lt;/xsl:template&gt;</code></pre>
+
+		<p>This template doesn&#8217;t copy its matching element, but makes sure that any content inside gets processed.
+		Even if there were nested <code>&lt;font&gt;</code> tags inside, they&#8217;d be silently nuked by this same template. Gotta love that.</p>
+	</div>
+
+	<h2>Making it sing</h2>
+
+	<p>As you can probably see, you&#8217;re suddenly back in the driver&#8217;s seat now, with the possibility to &#8220;fix&#8221; the stuff that the WYSIWYG component
+	generates. I&#8217;ll leave you with some examples of what I&#8217;ve been doing from project to project - some requiring lots of fixes, others merely
+	simple reformatting:</p>
+
+	<script src="https://gist.github.com/1871555.js?file=wysiwyg-06.xslt"></script>
+
+	<h2>Off you go, transforming XML &#8230;</h2>
+
+	<p>So, we&#8217;re down to the <em>bye-bye</em> part again, and I&#8217;d like to point out a few things:</p>
+
+	<ol>
+		<li>I actually do this on pretty-darn close to every project, yes</li>
+		<li>I don&#8217;t always have to mingle the data, but fairly often I actually do - and then it&#8217;s a breeze to add a couple of templates for it</li>
+		<li>I worry a little bit about how I&#8217;m going to do something similar to (and as flexible as) this in, say, V5 of Umbraco &#8230;</li>
+	</ol>
+
+	<p>Big thanks to you as always - I put a star next to your name for every article you&#8217;ve read the whole way through, you know?</p>
+
+	<hr/>
+
+	<div class="footnotes">
+	    <ol>
+	        <li id="f1-methodnames">
+	            Why is the casing like that in so many C# projects?
+	            Methods like that one really should be named <code>ParseXHTML()</code>, period.
+	            I can&#8217;t stand it the other way :-) <a href="#f1-link" title="Back">&#x2191;</a>
+	        </li>
+	        <li id="f2-xsltouch">
+	            XSLTouch saves you a lot of hair when using include and/or import statements in (.NET) XSLT,
+	            by automatically touching the master file to recompile the stylesheet when the included file changes.
+	            Don&#8217;t thank me, thank <a href="http://twitter.com/peteduncanson/">Pete!</a> <a href="#f2-link" title="Back">&#x2191;</a>
+	        </li>
+	    </ol>
+	</div>
+	
+</div><!-- #article -->
+
+<div id="footer">
+	Copyright &copy; 2012 <a href="http://greystate.dk/who/" rel="author">Chriztian Steinmeier</a> for <a href="http://pimpmyxslt.com/">Pimp My XSLT</a>.
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11788998-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Part II of using entities in (Umbraco) XSLT to improve XPath readability. Article for 'Pimp My XSLT'." />
+	<meta name="viewport" content="width=device-width" />
+	<!--
+		Copyright 2010 by Chriztian Steinmeier, http://greystate.dk/	
+	-->
+	<title>Entity Tricks for Your XPaths (Part II) @ Pimp My XSLT</title>
+	<link rel="stylesheet" href="../pimp-article.css" type="text/css" media="screen" charset="utf-8" />
+	
+	<link rel="first" href="/articles/entity-tricks-part1/" />
+	<link rel="index" href="/articles/" />
+	
+	<link rel="canonical" href="/articles/entity-tricks-part2/" />
+	
+	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+
+<div class="article">	
+	<h1>Entity Tricks for Your XPaths (Part II)</h1>
+	
+	<p class="credit">
+		Written by <a href="http://greystate.dk/" rel="author">Chriztian Steinmeier</a>.<br />
+		Got comments? I&#8217;m <a href="http://twitter.com/greystate" rel="external">@greystate</a> on Twitter.<br />
+		Didn&#8217;t read Part I? <a href="/articles/entity-tricks-part1/index.html" title="Read Part I here" rel="first">Go read that</a> first then.
+	</p>
+
+	<div class="intro">
+		<p>
+			This is Part II of the venture into using entities for more than just the odd danish character here and there :-)
+		</p>
+	</div>
+
+	<p>
+		If you recall what happened in <a href="../entity-tricks-part1" title="Entity Tricks for Your XPaths (Part I)">Part I</a>,
+		we learned how to declare and use our own <em>General Entities</em> inside an XSLT file, to collapse some of the more verbose
+		XPath stuff into something a little more meaningful. By later changing the entity declarations we could swap in support for the
+		new XML format in Umbraco 4.1, while keeping the wording of the XSLT intact.
+	</p>
+
+	<p>
+		If you&#8217;re anything like me, you&#8217;ve been hearing the same song inside your head since then:
+	</p>
+
+	<blockquote>
+		<p>
+			“Please, please; I don&#8217;t wanna write this in all my XSLTs&#8230;” 
+		</p>
+	</blockquote>
+
+	<p>
+		(Ooops, very cheesy. Sorry ‘bout that)
+	</p>
+	<p>
+		The problem is that <em>if</em> (which of course means <em>when</em>) we need to change the entity declarations,
+		we&#8217;ll have to change them in every file anyway, so we don&#8217;t really gain that much do we? Unless… we&#8217;re able to
+		<em>separate</em> the entity definitions from the actual files, and make sure there&#8217;s only one place we have to change them, if needed.
+	</p>
+
+	<p>
+		There is another kind of entity hidden in the old dusty DTD book: The <em>External Parameter Entity</em> — an entity type that&#8217;s
+		allowed inside a DTD, which we can put to good use here. It&#8217;s declared like this:
+	</p>
+
+<pre><code>&lt;!ENTITY % entities SYSTEM "entities.dtd"&gt;
+</code></pre>
+
+	<p>&#8212; and we use it like this:</p>
+
+<pre><code>&lt;!DOCTYPE xsl:stylesheet [
+    &lt;!ENTITY % entities SYSTEM "entities.dtd"&gt;
+
+    %entities;
+]&gt;
+</code></pre>
+
+	<p>The file &#8220;entities.dtd&#8221; contains the entities we defined in Part I:</p>
+
+<pre><code>&lt;!ENTITY nbsp "&amp;#00A0;"&gt;
+&lt;!ENTITY node "node"&gt;
+&lt;!ENTITY hidden "data[@alias = 'umbracoNaviHide' = 1]"&gt;
+</code></pre>
+
+	<p>You can probably already see where this is going, but I&#8217;m going to explain it nevertheless.</p>
+
+	<div class="explain">
+		<ul>
+			<li>
+				The percent sign inside the <strong>ENTITY</strong> declaration indicates that we’re defining a parameter
+				entity (called “entities”)
+			</li>
+			<li>The <strong>SYSTEM</strong> identifier denotes an <em>external</em> entity, found by resolving the URI that follows
+			</li>
+			<li>The contents of the file is parsed and inserted where we use the entity, like this: <strong>%entities;</strong> which, by the way, can only be used <em>inside</em> the DOCTYPE declaration
+			</li>
+		</ul>
+		<p>
+			So now the “normal” entities from the “entities.dtd” file are available for use inside the XSLT (or XML) file.
+		</p>
+	</div>
+
+	<p>
+		To continue the story where we’d like to reuse our existing (pre 4.1beta2) XSLT macros on a new 4.1 installation,
+		we could define a set of entities that would enable us to write version-independent XSLT (i.e., using <code>&amp;hidden;</code>
+		and <code>&amp;node;</code> but also <code>&amp;NewsItem;</code> etc.) and put them in a separate file, e.g.: <code>"entities.oldskool.dtd"</code>:
+	</p>
+
+<pre><code>&lt;!ENTITY nbsp "&amp;#00A0;"&gt;
+&lt;!ENTITY node "node"&gt;
+&lt;!ENTITY hidden "data[@alias = 'umbracoNaviHide' = 1]"&gt;
+&lt;!ENTITY NewsItem "node[@nodeTypeAlias = 'NewsItem']"&gt;
+</code></pre>
+
+<p>We&#8217;ll then create another file &#8212; <code>"entities.newskool.dtd"</code> with the &#8220;translated&#8221; versions of these:</p>
+
+<pre><code>&lt;!ENTITY nbsp "&amp;#00A0;"&gt;
+&lt;!ENTITY node "*[@isDoc]"&gt;
+&lt;!ENTITY hidden "umbracoNaviHide = 1"&gt;
+&lt;!ENTITY NewsItem "NewsItem"&gt;
+</code></pre>
+
+	<p>
+		and simply swap the filename in the Parameter Entity definition when it&#8217;s time to go newskool!
+	</p>
+
+	<h2>Caveat</h2>
+	<p>
+		Before you start deploying this technique big-time, you&#8217;ll need to know what happens if you&#8217;re using .NET
+		and the compiled transforms it supplies. In other words: Are you using Umbraco? &#8212; then you should read this:
+	</p>
+
+	<p class="critical">
+		If you change the external entity file, you <strong>have</strong> to <em>Save</em> or <em>touch</em>
+		the XSLT file(s) that use it, before the changes take effect!
+	</p>
+
+	<p>
+		&#8212;This is a known issue which also bites you if you&#8217;re using <code>xsl:include</code> or <code>xsl:import</code>
+		to externalize some of your commonly used templates (and that&#8217;s a future article, right there).
+	</p>
+	<p>
+		I&#8217;m sure, there&#8217;s someone, somewhere, working on being the first <em>Ninja</em> to create the package for Umbraco that adds
+		a “Touch all XSLT files NOW” button to the Developer Section&#8230; huh? Beer&#8217;s on me if you do.
+	</p>
+	<p class="update">
+		<a href="http://www.offroadcode.com" rel="external">Offroadcode</a> already made a super-easy solution for this: <a href="http://www.offroadcode.com/xsltouch.html">Check out XSLTouch</a> at their
+		website, or <a href="http://our.umbraco.org/projects/developer-tools/xsltouch">grab the Umbraco Package on our.umbraco.org.</a> - Guess I owe
+		you a beer Pete :-)  
+	</p>
+	<p>
+		That&#8217;s all for Part II &#8212; I&#8217;ll finish off in <a href="../entity-tricks-part3" title="Entity Tricks for Your XPaths (Part III)">Part III</a> with a longer example of how I tie all this
+		together, when developing with XML &amp; XSLT.
+	</p>
+</div>
+<div id="footer">
+	Copyright &copy; 2010 <a href="http://greystate.dk/who/" rel="author">Chriztian Steinmeier</a> for <a href="http://pimpmyxslt.com/">Pimp My XSLT</a>.
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11788998-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>

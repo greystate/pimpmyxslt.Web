@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>XSLT beyond for-each - Presentation slides @ Pimp My XSLT</title>
+	<link rel="stylesheet" href="/articles/pimp-article.css">
+	<link rel="canonical" href="/presentations/2010/xsl-beyond-for-each/" />
+	
+	<style type="text/css">
+		body { width: 75%; max-width: 800px; margin-left: auto; margin-right: auto; }
+		div.section {
+			background-color: #f8f8f8;
+			width: 80%;
+			margin: 1em auto;
+			padding: 1em;
+			-webkit-border-radius: 12px;
+			-moz-border-radius: 12px;
+			border-radius: 12px;
+			border: 2px solid #999;	
+		}
+		img.figure {
+			-webkit-border-radius: 8px;
+			-moz-border-radius: 8px;
+			border-radius: 8px;
+			-webkit-box-shadow: 0 0 16px rgba(0, 0, 0, 0.75);
+			-moz-box-shadow: 0 0 16px rgba(0, 0, 0, 0.75);
+			box-shadow: 0 0 16px rgba(0, 0, 0, 0.75);
+		}
+	</style>
+	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+
+<h1>XSLT beyond &lt;for-each&gt;</h1>
+
+<p>
+	Thanks to everyone who came to my XSLT session at <a href="http://codegarden10.com">Codegarden '10</a> &#8212; it was a blast,
+	and I really appreciate all the great feedback I got from you! 
+</p>
+<p>
+	You can grab the slides here and a <a href="http://www.macromates.com">TextMate</a> bundle with my evil snippets :-)
+</p>
+<p>
+	<em>NOTE:</em> If you&#8217;re stuck on Windows, you should be able to use the bundle with <a href="http://www.e-texteditor.com">E-TextEditor</a> too! Free bonus :-)
+</p>
+
+<ul>
+	<li>
+		<a href="XSLT_Beyond_for-each.pdf" type="application/pdf" title="Slides (PDF) from my &quot;XSLT beyond &lt;for-each&gt;&quot; session at CG10.">&quot;XSLT beyond &lt;for-each&gt;&quot; &#8212; slides</a>
+		(PDF). Alternatively, you can <a href="XSLT_Beyond_for-each.zip" type="application/zip" title="Slides (ZIP) from my &quot;XSLT beyond &lt;for-each&gt;&quot; session at CG10.">grab a ZIP file here.</a>
+	</li>
+	<li>
+		<a href="XSLT_Chriz.zip" type="application/zip" title="Zipped up Bundle for TextMate">TextMate Bundle (ZIP)</a>
+	</li>
+</ul>
+
+<p>
+	Heck, if you want to, you can actually watch a video of the presentation in the <a href="http://stream.umbraco.org/video/727228/chriztian-steinmeier-xslt" title="Chriztian Steinmeier - XSLT beyond for-each - Umbraco Video archive" rel="external">Umbraco Video Archive</a>.
+</p>
+
+<p>
+	Enjoy, and remember lots of garlic for slide #51 :-)
+</p>
+
+
+<hr/>
+
+<div id="behind-the-scenes" class="section">
+	<h2>Behind the Scenes</h2>
+	<p>
+		Here&#8217;s a little bonus info for XML &amp; XSLT geeks like me: The slides were built with my own custom system;
+		An XML file for defining the slides and an XSLT stylesheet that transforms it into HTML which is then presented using
+		Opera&#8217;s "Opera Show" mode. This uses the &#8220;projection&#8221; media type of CSS, which very easily turns into
+		pages with a couple of simple rules.
+	</p>
+	<p>
+		Including the code snippets was as easy as copying the code verbatim into a &lt;snippet&gt; element, which I could then
+		handle as any other custom XML element - an example from slide #56: 
+	</p>
+
+	<h3>Actual XML in the slides.xml file:</h3>
+
+	<script src="https://gist.github.com/947083.js?file=snippet.xml"></script>
+	
+	<h3>Rendered view:</h3>
+	<img class="figure" src="sample_code_snippet.png" width="600" height="232" alt="Sample Code Snippet" />
+
+	<p>
+		As you can see, there&#8217;s even some nifty highlighting going on, which is all handled by
+		templates, just as I&#8217;m sort of preaching in the presentation &#8212; here&#8217;s the template
+		that handles highlighting an attribute:
+	</p>
+
+	<script src="https://gist.github.com/947083.js?file=snippet-template.xslt"></script>	
+
+	<p>
+		To make sure the special <code>hi:lite</code> attributes are never accidentally rendered,
+		I include a high priority template for those:
+	</p>
+
+	<script src="https://gist.github.com/947083.js?file=suppress-hilite-template.xslt"></script>
+	
+	<p>
+		The Post-It&trade; that tells the language of the code in the snippet is something I implemented
+		very late in the process&#8212;but thanks to XSLT &amp; CSS3 it was a walk in the park, to add the
+		<code>language</code> attribute to all <code>&lt;snippet&gt;</code> elements, then a template to
+		add it to the output. And a chunk of CSS to position, rotate &amp; scale it nicely and transparent :-)
+	</p>
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11788998-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>

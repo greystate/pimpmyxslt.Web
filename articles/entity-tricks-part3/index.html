@@ -1,0 +1,364 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Part III (final part) of using entities in (Umbraco) XSLT to improve XPath readability. Article for 'Pimp My XSLT'." />
+	<meta name="viewport" content="width=device-width" />
+	<!--
+		Copyright 2011 by Chriztian Steinmeier, http://greystate.dk/	
+	-->
+	<title>Entity Tricks for Your XPaths (Part III) @ Pimp My XSLT</title>
+	<link rel="stylesheet" href="../pimp-article.css" type="text/css" media="screen" charset="utf-8" />
+	
+	<link rel="prev" href="/articles/entity-tricks-part2/" />
+	<link rel="index" href="/articles/" />
+
+	<link rel="canonical" href="/articles/entity-tricks-part3/" />
+	
+	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+
+<div class="article">
+	<h1>Entity Tricks for Your XPaths (Part III)</h1>
+	<p class="credit">
+		Written by <a href="http://greystate.dk/">Chriztian Steinmeier</a>.<br />
+		Got comments? I&#8217;m <a href="http://twitter.com/greystate" rel="external">@greystate</a> on Twitter.
+	</p>
+	<div class="intro">
+		<p>
+			This concludes my trilogy of entity tricks (everyone should have a trilogy, right?) with some nasty
+			trickery to finally bring order to the galaxy&#8230; sort of :-)
+		</p>
+	</div>
+	
+	<p>
+		Parts <a href="../entity-tricks-part1" title="Entity Tricks for Your XPaths (Part I)">I</a> and <a
+		href="../entity-tricks-part2" title="Entity Tricks for Your XPaths (Part II)">II</a> should have prepared
+		you for the final chapter - you should definitely brush up on them if you&#8217;re not entirely sure
+		about the difference between a &#8220;General Entity&#8221; and a &#8220;Parameter Entity&#8221;.
+	</p>
+
+	<h2>Welcome To My World</h2>
+
+	<p>
+		Now, I do most of my development locally, including XSLT transforms&#8212;I usually grab the source XML
+		and save it as a static XML file and start hacking away in <a href="http://macromates.org" title="Excellent editor. Really.">TextMate</a>,
+		where I&#8217;ve got a set of fine-tuned (to my workflow) snippets and commands to help the code flow&#8230;
+	</p>
+
+	<p>
+		Working in Mac OS X, I use the <code>xsltproc</code> commandline processor for transforms (yes, but of
+		course they&#8217;re wired up to a keyboard shortcut), which obviously presents a couple of <em>blockers</em>
+		when dealing with something so .NET-based as Umbraco&#8212;I&#8217;ll list them here, and describe how I
+		<em>mock</em> (work around) them:
+	</p>
+
+	<ol>
+		<li>The $currentPage parameter is not supplied to my XSLT</li>
+		<li>I don&#8217;t have access to the extension functions in the various namespaces (umbraco.library, EXSLT &amp; MSXML)</li>
+	</ol>
+
+	<h3>How to mock $currentPage</h3>
+
+	<p>
+		The first one is actually quite easy to <em>mock:</em> Using the select attribute on the param instruction, you
+		can specify a default value that&#8217;ll be discarded if a value is actually passed to the parameter. So
+		I just decide on a node that will be a good fit for the current development session, and point to it like
+		this:
+	</p>
+
+	<pre><code>&lt;xsl:param name="currentPage" select="/root/Website[1]/Textpage[3]" /&gt;</code></pre>
+
+	<p>&#8212;which would select the 3rd top nav item of the 1st website in my &#8220;standard&#8221; Umbraco setup.</p>
+
+	<p>
+		Because it&#8217;s just a default value I can leave it in the file when deploying, because in the
+		production environment, Umbraco always supplies a value for this parameter.
+	</p>
+
+	<p>So that one&#8217;s actually really easy&#8212;one down, more to go&#8230;</p>
+
+	<h3>Mocking extension functions</h3>
+
+	<p>
+		These are the functions I use frequently enough to want to mock, so I don&#8217;t get a bunch of
+		errors when transforming:
+	</p>
+
+	<ul>
+		<li><code>umbraco.library:NiceUrl()</code></li>
+		<li><code>msxml:node-set()</code></li>
+	</ul>
+
+	<p>
+		So to be able to use these, I tried a bunch of different things - but I wanted to find something that
+		wouldn&#8217;t require remembering to comment/un-comment lines between development and production code.
+		And I found one, which is what this is all about&#8230; entities to the rescue.
+	</p>
+
+	<h2>First Things First</h2>
+
+	<h3>Mocking <code>NiceUrl()</code></h3>
+
+	<p>
+		But we&#8217;ll take baby steps and first decide what to replace <code>NiceUrl()</code> with locally - I wound up
+		using the <code>string()</code> function because it also takes a single argument, so I declared this entity:
+	</p>
+
+	<pre><code>&lt;!ENTITY NiceUrl "string"&gt;</code></pre>
+
+	<p>and repaced all occurrences of the <code>NiceUrl()</code> library call with that, e.g. this:</p>
+
+	<pre><code>&lt;a href="{umb:NiceUrl(@id)}"&gt;The Dharma Initiative&lt;/a&gt;</code></pre>
+
+	<p>became this:</p>
+
+	<pre><code>&lt;a href="{&amp;NiceUrl;(@id)}"&gt;The Dharma Initiative&lt;/a&gt;</code></pre>
+
+	<p>which, as we&#8217;ve learned in Part I, is seen by the XSLT processor as:</p>
+
+	<pre><code>&lt;a href="{string(@id)}"&gt;The Dharma Initiative&lt;/a&gt;</code></pre>
+
+	<p>
+		The links won&#8217;t work, but that&#8217;s never a concern for the XSLT code, since the responsibility
+		of the link being correct lies entirely within the internal Umbraco code for that method. Only thing I
+		should care about is whether the right id is processed - and I&#8217;ll see that in the final frontend code
+		after the transformation has finished:
+	</p>
+
+	<pre><code>&lt;a href="4815"&gt;The Dharma Initiative&lt;/a&gt;</code></pre>
+
+	<p>Very easy to check the correctness of that, if necessary.</p>
+
+	<p>
+		(And the reason for using an entity for this? Well, you should know that by now, but it&#8217;ll make it
+		really easy to swap the faked version with the real one later.)
+	</p>
+
+	<h3>Mocking <code>node-set()</code></h3>
+
+	<p>
+		This one&#8217;s a little different, right? I didn&#8217;t <em>need</em> <code>NiceUrl()</code> to
+		function correctly to be able to develop my transforms, whereas I can&#8217;t do without the specific
+		functionality that <code>node-set()</code> provides.
+	</p>
+
+	<p>
+		Luckily, it&#8217;s a very common need in XSLT 1.0 to be able to convert a so-called &#8220;DocumentFragment&#8221; to
+		a node set&#8212;thus, every XSLT processor I know of has an implementation of that method. In <code>xsltproc</code>
+		it&#8217;s implemented as one of the <a href="http://exslt.org/" title="Read more about the EXSLT project on exslt.org">EXSLT</a> methods.
+	</p>
+
+	<div class="explain">
+		<p>
+			Now, in a perfect world, it would be possible for me to use the exslt:node-set() function in the <code>xsltproc</code>
+			processor on my Mac, and because Umbraco implements a .NET EXSLT library it would automatically work in
+			the Umbraco application too; But sadly that&#8217;s not the case. If you want to know a little more about
+			this, check out this question I put on our.umbraco.org just about a year ago:
+			<a href="http://our.umbraco.org/forum/core/general/7689-Question-regarding-Umbraco&#8217;s-EXSLT-implementation" title="Question regarding Umbraco&#8217;s EXSLT implementation">Question regarding Umbraco&#8217;s EXSLT implementation</a>
+		</p>
+	</div>
+
+	<p>So to solve this, I set up a small snippet like this to visualize the differences:</p>
+
+	<pre><code>&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:msxsl="urn:schemas-microsoft-com:xslt"
+    xmlns:exslt="http://exslt.org/common"
+&gt;
+    &lt;xsl:variable name="data-values"&gt;
+        &lt;val&gt;2&lt;/val&gt;
+        &lt;val&gt;4&lt;/val&gt;
+        &lt;val&gt;8&lt;/val&gt;
+    &lt;/xsl:variable&gt;
+    &lt;!-- Create node-set using EXSLT function --&gt;
+    &lt;xsl:variable name="exsltdata" select="exslt:node-set($data-values)" /&gt;
+
+    &lt;!-- Create node-set using MSXML function --&gt;
+    &lt;xsl:variable name="msxsldata" select="msxsl:node-set($data-values)" /&gt;
+
+    &lt;xsl:template match="/"&gt;
+        ...
+    &lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;
+</code></pre>
+
+	<p>
+		So it&#8217;s obvious that in both versions we&#8217;re calling a function called <code>node-set()</code>, but each in its own
+		namespace, hence the different namespace-prefixes. Since the only thing that matters when dealing with
+		namespaces is the actual namespace-URI, I figured I could use the same prefix for both versions and just
+		set the namespace-URI as I saw fit, so I came up with this:
+	</p>
+
+	<pre><code>&lt;!ENTITY nodeset-ns-uri "http://exslt.org/common"&gt;</code></pre>
+
+	<p>&#8212;and then using that when defining the prefix:</p>
+
+	<pre><code>&lt;xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:make="&amp;nodeset-ns-uri;"
+&gt;
+</code></pre>
+
+	<p>This gave me the side-effect of using the prefix to better &#8220;name&#8221; the function when used:</p>
+
+	<pre><code>&lt;xsl:variable name="data-values"&gt;
+    &lt;val&gt;2&lt;/val&gt;
+    &lt;val&gt;4&lt;/val&gt;
+    &lt;val&gt;8&lt;/val&gt;
+&lt;/xsl:variable&gt;
+&lt;xsl:variable name="data" select="make:node-set($data-values)" /&gt;
+</code></pre>
+
+	<blockquote>
+		<p>&#8220;Hey, make a node set out of those data values!&#8221;</p>
+	</blockquote>
+
+	<h2>Externalizing For Development &amp; Production</h2>
+
+	<p>
+		All is well, I&#8217;ve made it possible to run the XSLT transforms locally on my trusty old MacBook Pro,
+		so I can concentrate on generating the right markup with fast previews and all the benefits of not
+		having a full solution running.
+	</p>
+
+	<p>
+		It should come as no surprise to you that the next step is to figure out how to handle the entity-swapping
+		that must happen before putting the XSLT file back onto the server. To recap:
+	</p>
+
+	<h3>$currentPage</h3>
+
+	<ul>
+		<li><strong>Local:</strong> Select a specific node with the <code>select</code> attribute on <code>&lt;xsl:param&gt;</code></li>
+		<li><strong>Server:</strong> No change - Like a Mac, it just works :-)</li>
+	</ul>
+
+	<h3>umbraco.library:NiceUrl()</h3>
+
+	<ul>
+		<li><strong>Local:</strong> Entity <code>NiceUrl</code>: &#8220;string&#8221; </li>
+		<li><strong>Server:</strong> Entity <code>NiceUrl</code>: &#8220;umbraco.library:NiceUrl&#8221;</li>
+		<li>Use &#8220;&amp;NiceUrl;(&#8230;)&#8221; in XSLT</li>
+	</ul>
+
+	<h3>msxml:node-set()</h3>
+
+	<ul>
+		<li><strong>Local:</strong> Entity <code>nodeset-ns-uri</code>: &#8220;http://exslt.org/common&#8221;.</li>
+		<li><strong>Server:</strong> Entity <code>nodeset-ns-uri</code>: &#8220;urn:schemas-microsoft-com:xslt&#8221;</li>
+		<li>Use &#8220;make:node-set(&#8230;)&#8221; in XSLT</li>
+	</ul>
+
+	<p>I <em>could</em> create all of the entities in a single file, and comment out the ones that shouldn&#8217;t be used:</p>
+
+	<pre><code>&lt;!-- Entities for development --&gt;
+&lt;!--ENTITY nodeset-ns-uri "http://exslt.org/common"--&gt;
+&lt;!--ENTITY NiceUrl "string"--&gt;
+
+&lt;!-- Entities for production --&gt;
+&lt;!ENTITY nodeset-ns-uri "urn:schemas-microsoft-com:xslt"&gt;
+&lt;!ENTITY NiceUrl "umbraco.library:NiceUrl"&gt;
+</code></pre>
+
+	<p>But as it turns out, there&#8217;s an even neater way to mark a section to be <em>ignored</em> or <em>included</em>:</p>
+
+	<pre><code>&lt;![IGNORE[
+    &lt;!ENTITY nodeset-ns-uri "http://exslt.org/common"&gt;
+    &lt;!ENTITY NiceUrl "string"&gt;
+]]&gt;
+&lt;![INCLUDE[
+    &lt;!ENTITY nodeset-ns-uri "urn:schemas-microsoft-com:xslt"&gt;
+    &lt;!ENTITY NiceUrl "umbraco.library:NiceUrl"&gt;
+]]&gt;
+</code></pre>
+
+	<p>
+		As the Parameter Entity can only be used inside a DTD, these declarations can only be used in an <em>external DTD</em> (i.e.,
+		one referenced by a Parameter Entity) so extracting this we&#8217;re left with a single Parameter Entity in the XSLT file:
+	</p>
+
+	<pre><code>&lt;!DOCTYPE xsl:stylesheet [
+    &lt;!ENTITY % entities SYSTEM "entities.ent"&gt;
+    %entities;
+]&gt;
+</code></pre>
+
+	<p>
+		and in the &#8220;entities.ent&#8221; file, we&#8217;ll put the entities, with a little switching magic at the top, so we (again) get
+		labels for the sections (production/development) and configuration at the top:
+	</p>
+
+	<pre><code>&lt;!ENTITY production "IGNORE"&gt;   &lt;!-- Swap these for correct environment --&gt;
+&lt;!ENTITY development "INCLUDE"&gt;
+
+&lt;![&amp;production;[
+    &lt;!ENTITY nodeset-ns-uri "http://exslt.org/common"&gt;
+    &lt;!ENTITY NiceUrl "string"&gt;
+]]&gt;
+&lt;![&amp;development;[
+    &lt;!ENTITY nodeset-ns-uri "urn:schemas-microsoft-com:xslt"&gt;
+    &lt;!ENTITY NiceUrl "umbraco.library:NiceUrl"&gt;
+]]&gt;
+</code></pre>
+
+	<p>
+		Needless to say, there will be two different versions of this file - one on the server, and one on the local dev
+		machine - only differing in the top two lines. You probably shouldn&#8217;t put this file in version control,
+		and definitely don&#8217;t include it in any deployment script you&#8217;re running. You know you&#8217;ll end up
+		overwriting the one with the other, and all hell breaks loose :-)
+	</p>
+
+	<h2>Still here?</h2>
+
+	<p>You should know by now, that I <strong>really</strong> think you rock. Big-time. </p>
+
+	<p><em>Bonus Entities</em> to think about:</p>
+
+	<pre><code>&lt;!ENTITY all-siblings "../*"&gt;
+&lt;!ENTITY empty "not(normalize-space())"&gt;
+
+&lt;!ENTITY dates "urn:Exslt.ExsltDatesAndTimes"&gt;
+&lt;!ENTITY day-in-week "dayinweek"&gt;
+&lt;!-- vs. --&gt;
+&lt;!ENTITY dates "http://exslt.org/dates-and-times"&gt;
+&lt;!ENTITY day-in-week "day-in-week"&gt;
+
+&lt;!ENTITY displayTitle "(pageTitle | @nodeName[not(normalize-space(../pageTitle))])[1]"&gt;
+
+&lt;!ENTITY getCookie "string"&gt;
+&lt;!ENTITY setCookie "concat"&gt;
+&lt;!-- vs. --&gt;
+&lt;!ENTITY getCookie "umb:RequestCookies"&gt;
+&lt;!ENTITY setCookie "umb:setCookie"&gt;
+</code></pre>
+
+	<p>
+		I&#8217;m very much aware that what I&#8217;ve described in this series is by no means an average scenario,
+		but I sincerely hope that if you&#8217;ve read this far, you&#8217;d want to dig a little deeper in some concept
+		or coding pattern you&#8217;ve only scratched the surface of until now; and if you do &#8212; please consider
+		writing a series of blogposts or articles for us to read!
+	</p>
+	
+</div><!-- #article -->
+
+<div id="footer">
+	Copyright &copy; 2011 <a href="http://greystate.dk/who/" rel="author">Chriztian Steinmeier</a> for <a href="http://pimpmyxslt.com/">Pimp My XSLT</a>.
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11788998-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>

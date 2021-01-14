@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Using XSLT keys to handle the Multi-Node Tree Picker from the uComponents package for Umbraco. Article for 'Pimp My XSLT'." />
+	<meta name="viewport" content="width=device-width" />
+	<!--
+		Copyright 2011 by Chriztian Steinmeier, http://greystate.dk/	
+	-->
+	<title>Using the Multi-Node Tree Picker in XSLT @ Pimp My XSLT</title>
+	<link rel="stylesheet" href="../pimp-article.css" type="text/css" media="screen" charset="utf-8" />
+	
+	<link rel="index" href="/articles/" />
+
+	<link rel="canonical" href="/articles/multipicker/" />
+	
+	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+
+<div class="article">
+	<h1>Using the Multi-Node Tree Picker in XSLT</h1>
+	<p class="credit">
+		Written by <a href="http://greystate.dk/">Chriztian Steinmeier</a>.<br />
+		Got comments? I&#8217;m <a href="http://twitter.com/greystate" rel="external">@greystate</a> on Twitter.
+		<a href="/articles/" rel="index">&#x2190; Back to Article Index</a>
+	</p>
+	<div class="intro">
+		<p>The Multi-Node Tree Picker in the <a href="http://ucomponents.codeplex.com">uComponents</a> package is a fantastic Data Type and one of the most versatile additions to Umbraco. You can (and probably already do) use it for a bunch of stuff; pretty much everywhere your content editors need to be able pick something (and/or maybe only particular types of things) and then easily modify their selections later, it&#8217;s an invaluable tool.</p>
+		<p>This article will show you an efficient way of rendering the contents of this Data Type, by way of using XSLT keys.</p>
+	</div>
+	
+
+	<p>You have the choice of storing the picked items as CSV data or XML, but I don&#8217;t see a choice there &#8212; of course I&#8217;m going for XML; and you probably will too, when I&#8217;ve shown you how ridiculously easy it is to handle every kind of Document Type you&#8217;ve allowed your editors to pick&#8230; Welcome to another Pimp My XSLT article!</p>
+
+	<p>Let&#8217;s jump right in and pretend we&#8217;ve got three different Document Types that we&#8217;d like to be able to arbitrarily place in a &#8220;flowing stream&#8221; on our already amazing website: Simple links, embedded videos and blog posts &#8212;Tumblr here we come!</p>
+
+	<p>The HTML would look something like this<sup id="f1-sublimevideo-l"><a href="#f1-sublimevideo">[1]</a></sup>:</p>
+
+	<script src="https://gist.github.com/906495.js?file=multipicker-01.html"></script>
+
+	<p>Knowing Umbraco&#8217;s flavor of XML, I&#8217;m aiming for roughly these chunks of data<sup id="f2-markdown-l"><a href="#f2-markdown">[2]</a></sup>:</p>
+
+	<script src="https://gist.github.com/906495.js?file=multipicker-02.xml"></script>
+
+	<h2>Setup</h2>
+
+	<p>A Multi-Node Tree Picker is very easy to set up - here&#8217;s how I set it up for this demo:</p>
+
+	<p class="figure"><img id="multipickersetup" src="MultiPickerSetup.png" alt="MultiPicker Setup" title="Multi-Node Tree Picker Setup in Umbraco Admin" /></p>
+
+	<p>One very powerful feature is the XPath filter option, where you can specify a filter that decides which nodes can or can not be selected. I just wrote what I would have written in the match attribute of a template that should match the eligible nodes, e.g.:</p>
+
+	<pre><code>
+&lt;xsl:template match="BlogPost | Video | Link"&gt;
+    &lt;!-- do stuff --&gt;
+&lt;/xsl:template&gt;
+	</code></pre>
+
+	<p>I named my Data Type &#8220;Stream Content Picker&#8221; and I&#8217;ve put it on a &#8220;Stream Page&#8221; Document Type as the property &#8220;streamContent&#8221; - so the XML output will look something like this:</p>
+
+	<script src="https://gist.github.com/906495.js?file=multipicker-03.xml"></script>
+
+	<p>So inside the property element we get a <code>&lt;MultiNodePicker&gt;</code> element with a <code>&lt;nodeId&gt;</code> child for each picked node. Easy as pie&#8230;</p>
+
+	<h2>Ready to Roll?</h2>
+
+	<p>At this point we should be ready to do what we all came here for, which of course is XSLT! (Yes, you too Sebastiaan :-)</p>
+
+	<p>I know that <strong>a lot</strong> of you probably already are thinking in terms of &#8220;looping all the nodeIds&#8221; etc., but hey, it wouldn&#8217;t be a real Pimp My XSLT article if I didn&#8217;t have at least one little trick up my sleeve, right?</p>
+
+	<p>But first, let&#8217;s get the templates into place - we need three main templates &#8212; one for each content type to show:</p>
+
+	<script src="https://gist.github.com/906495.js?file=multipicker-04.xslt"></script>
+
+	<p>A couple of notes here:</p>
+
+	<ul>
+	<li>The frontend code for the BlogPost&#8217;s date says &#8220;Yesterday&#8221; - that&#8217;s definitely going to take some computation, so shouldn&#8217;t be put right in the template (even in C#/Razor I&#8217;d say it&#8217;s a helper of some sorts.)</li>
+	<li>Likewise for the Markdown Editor output - the purpose (for me) of using that control instead of the regular Rich Text Editor, is to have much better control over the output, so even though my simple example could easily do with a simple copy-of, I&#8217;m handing it over already.</li>
+	<li>If you&#8217;ve read the <a href="http://pimpmyxslt.com/articles/include-or-import/">include or import</a> article you may remember the &#8220;_MediaHelper.xslt&#8221; file - I&#8217;m using this for media stuff, so the Video element is partially handled by that (with some overrides).</li>
+	</ul>
+
+	<h2>Iteration 1</h2>
+
+	<p>Here&#8217;s a basic first attempt at the StreamPage macro XSLT:</p>
+
+	<script src="https://gist.github.com/906495.js?file=multipicker-05.xslt"></script>
+
+	<p>(We assume that the aforementioned templates for BlogPost, Video &amp; Link are present)</p>
+
+	<p>Though this is a perfectly fine and working solution, I am not very fond of it for a couple of reasons:</p>
+
+	<ol>
+		<li>I generally don&#8217;t put much code in the root template because I like it to just start things off, not actually do them</li>
+		<li>We&#8217;re calling <code>GetXmlNodeById()</code> &#8216;x&#8217; number of times to get something that&#8217;s already available to us in the Umbraco XML document we were given through the $currentPage parameter</li>
+		<li>There&#8217;s a really neat feature built right into XSLT that we should use for something like this</li>
+	</ol>
+
+	<h2>Iteration 2</h2>
+
+	<p>Using a key to perform the lookup:</p>
+
+	<script src="https://gist.github.com/906495.js?file=multipicker-06.xslt"></script>
+
+	<p>Here&#8217;s how that works:</p>
+
+	<p>The <code>&lt;xsl:key&gt;</code> creates a lookup table of all the nodes in the document, that matches the pattern in the <code>match</code> attribute - so in this case all Documents. The <code>use</code> attribute is the value to store in the index for the given node (and thus, the one used to locate the node again). We now have a simple table where we can ask for any node by its <code>id</code>, which we do with the <code>key()</code> function in XPath - the first argument is the name of the key and the second is the value to look up.</p>
+	<p><strong>Important:</strong> The <code>key()</code> function can only find nodes in <em>the document that contains the "context node"</em> (in Umbraco, the root template is <strong>not</strong> inside that document, but as soon as you&#8217;ve applied templates to an element you&#8217;re usually safe). I&#8217;m using it within a template for <code>&lt;nodeId&gt;</code> elements which are indeed inside the Umbraco XML.</p>
+
+	<div class="explain">
+	    <h2>What&#8217;s the difference between using <code>GetXmlNodeById()</code> and this fancy <code>key()</code> thingymajiggy?</h2>
+	    <p>
+	        First off, <code>GetXmlNodeById()</code> is a C# extension function provided by Umbraco, so it&#8217;s obviously only available within the context of Umbraco, not in &#8220;standard&#8221; XSLT. The <code>key()</code> function, however, is a native XPath function and thus, available in any standard XSLT context. (I also happen to believe that keys outperform the extension when performing many lookups.)<sup id="f3-performance-l"><a href="#f3-performance">[3]</a></sup>
+	    </p>
+	    <p>
+	        Secondly, the <code>GetXmlNodeById()</code> function is limited to only fetching by id, whereas the <code>key()</code> function is very versatile because you can define which elements to index and by which component - look at these examples for an idea of what&#8217;s possible with keys in XSLT:
+	    </p>
+	    <pre><code>
+&lt;xsl:key name=&quot;hidden-state&quot; match=&quot;*[@isDoc][not(self::Event)]&quot; use=&quot;umbracoNaviHide&quot; /&gt;
+&lt;!-- Find all hidden pages (that aren&#x27;t Event documents) --&gt;
+&lt;xsl:variable name=&quot;hiddenPages&quot; select=&quot;key(&#x27;hidden-state&#x27;, 1)&quot; /&gt;
+
+&lt;xsl:key name=&quot;docs-by-month&quot; match=&quot;*[@isDoc]&quot; use=&quot;substring(@createDate, 1, 7)&quot; /&gt;
+&lt;!-- Find all docs created this month --&gt;
+&lt;xsl:variable name=&quot;currentStuff&quot; select=&quot;key(&#x27;docs-by-month&#x27;, concat($year, &#x27;-&#x27;, $month))&quot; /&gt;
+	    </code></pre>
+		<p>
+			Last, but not least: Because the picker retains the nodeId even if the actual node has subsequently been deleted, <code>GetXmlNodeById()</code> will return a node (though an <code>&lt;error&gt;</code> node) and your code needs to handle that. The <code>key()</code> function on the other hand, can only find nodes that exist in the document, so no extra code is needed and no errors are returned.
+		</p>
+	</div>
+
+	<p>I&#8217;m still not satisfied with the way this flows, though; It&#8217;s a little too tightly coupled to the details of the implementation&#8230; also, there&#8217;s an even better way to use the <code>key()</code> function which we&#8217;ll try now.</p>
+
+	<h2 id="iteration3">Iteration 3</h2>
+
+	<script src="https://gist.github.com/906495.js?file=multipicker-07.xslt"></script>
+
+	<p>OK, this is nice - first of all, putting the mode on the apply-templates call enables me to apply templates to the actual property instead of an element 2 steps down inside it. Reads much better.</p>
+
+	<p>(The thing to realize here is, that if a template doesn&#8217;t exist for an element in a given <em>mode</em>, a built-in template kicks in to apply the mode recursively down until a template is met - in this case our MultiNodePicker template).</p>
+
+	<p>Now look at that - by supplying a <em>node-set</em> instead of a single value as the second argument to the <code>key()</code> function, the XSLT processor automatically does the equivalent of calling the <code>key()</code> function for every element in the node-set but much more efficient. And because we&#8217;re using it in an apply-templates instruction, all the picked documents will be rendered using the templates we defined earlier - <em>all done with that single line.</em> XSLT was built for set operations like these so you should assume that they go by pretty snappy.</p>
+
+	<p>There is a caveat to the &#8220;snappiness&#8221; of said method, though - we&#8217;ll get the picked nodes in <em>document order</em> as opposed to the order from the Multi-Node Tree Picker. Because the control is so awesome it lets us (and your editors) rearrange the nodes with Ajaxy ease, we&#8217;ll of course need to fix that.</p>
+
+	<p>And let&#8217;s just make it a helper include-file while we&#8217;re at it, shall we?</p>
+
+	<h2 id="googled">Iteration 4</h2>
+
+	<h3>Macro: PageStream.xslt</h3>
+
+	<script src="https://gist.github.com/906495.js?file=multipicker-08.xslt"></script>
+
+	<h3>Include: _MultiPickerHelper.xslt</h3>
+
+	<script src="https://gist.github.com/906495.js?file=multipicker-09.xslt"></script>
+
+	<p>Just to recap how simple this is:</p>
+
+	<ol>
+		<li>Create a macro</li>
+		<li>Create template(s) in the XSLT file for rendering your Document Type(s)</li>
+		<li>Include &#8220;_MultiPickerHelper.xslt&#8221; in your macro&#8217;s XSLT file</li>
+		<li>Wherever you want to render the results of the Multi-Node Tree Picker, just apply templates to the property in &#8220;multipicker&#8221; mode.</li>
+	</ol>
+
+	<p><a href="_MultiPickerHelper.xslt" title="Download the Multi Picker Helper XSLT file" type="application/xml">Download the &#8220;_MultiPickerHelper.xslt&#8221; file here</a> - it has a neat little option for power users to discover but I&#8217;ll let you figure that one out on your own, Pete :-)</p>
+
+	<p>You can also download the <a href="multipicker-complete.zip" title="Download project files" type="application/zip">complete project files</a> here for further scrutiny. Be warned - there are entities the size of kittens in there! :-)</p>
+
+	<p>Please enjoy, and a huge thanks goes to <strong>you</strong> for returning to pimpmyxslt.com so often!</p>
+
+	<hr />
+
+	<div class="footnotes">
+	    <ol>
+	        <li id="f1-sublimevideo">
+	            I&#8217;m using <a href="http://sublimevideo.net">SublimeVideo</a> so yes, that is all the HTML I need for video :)
+	            <a href="#f1-sublimevideo-l" title="Back">&#x2191;</a>
+	        </li>
+	        <li id="f2-markdown">
+	            The <a href="http://our.umbraco.org/projects/backoffice-extensions/markdown-editor">Markdown Editor</a> by <a href="http://twitter.com/leekelleher">Lee Kelleher</a> has an option to output as XML. Yay, go Lee!
+	            <a href="#f2-markdown-l" title="Back">&#x2191;</a>
+	        </li>
+	        <li id="f3-performance">
+	            I have not run any tests on this yet, though. 
+	            <a href="#f3-performance-l" title="Back">&#x2191;</a>
+	        </li>
+	    </ol>
+	</div>
+	
+</div><!-- #article -->
+
+<div id="footer">
+	Copyright &copy; 2011 <a href="http://greystate.dk/who/" rel="author">Chriztian Steinmeier</a> for <a href="http://pimpmyxslt.com/">Pimp My XSLT</a>.
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11788998-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>

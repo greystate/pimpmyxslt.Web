@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>Pimp My XSLT</title>
+		<link>http://pimpmyxslt.com</link>
+		<atom:link href="http://pimpmyxslt.com/pimped.xml" rel="self" type="application/rss+xml" />
+		<description>Feed of articles/posts on http://pimpmyxslt.com</description>
+		<language>en-us</language>
+		<copyright>(c) Copyright 2010-2012 Chriztian Steinmeier. All Rights Reserved.</copyright>
+		<lastBuildDate>Mon, 20 Feb 2012 22:37:55 +0100</lastBuildDate>
+	
+		<item>
+			<title>Transforming WYSIWYG output with XSLT</title>
+			<description><![CDATA[How to use XSLT to transform WYSIWYG contents for better output.]]></description>
+			<link>http://pimpmyxslt.com/articles/wysiwyg/</link>
+			<pubDate>Mon, 20 Feb 2012 22:37:55 +0100</pubDate>
+			<guid isPermaLink="true">http://pimpmyxslt.com/articles/wysiwyg/</guid>
+		</item>
+
+		<item>
+			<title>Using the Multi-Node Tree Picker in XSLT</title>
+			<description><![CDATA[Learn the effortless way to render Multi-Node Tree Picker properties in XSLT.]]></description>
+			<link>http://pimpmyxslt.com/articles/multipicker/</link>
+			<pubDate>Mon, 28 Mar 2011 02:02:15 +0200</pubDate>
+			<guid isPermaLink="true">http://pimpmyxslt.com/articles/multipicker/</guid>
+		</item>
+
+		<item>
+			<title>Entity Tricks for Your XPaths (Part III)</title>
+			<description><![CDATA[Final chapter in the trilogy of XML entities and wielding them like crazy in XSLT.]]></description>
+			<link>http://pimpmyxslt.com/articles/entity-tricks-part3/</link>
+			<pubDate>Tue, 25 Jan 2011 22:56:29 +0100</pubDate>
+			<guid isPermaLink="true">http://pimpmyxslt.com/articles/entity-tricks-part3/</guid>
+		</item>
+	
+		<item>
+			<title>xsl:include or xsl:import?</title>
+			<description><![CDATA[What's the difference between xsl:include and xsl:import, and how do you use them?.]]></description>
+			<link>http://pimpmyxslt.com/articles/include-or-import/</link>
+			<pubDate>Sat, 30 Oct 2010 02:27:34 +0200</pubDate>
+			<guid isPermaLink="true">http://pimpmyxslt.com/articles/include-or-import/</guid>
+		</item>
+	
+		<item>
+			<title>Supporting Multiple Formats in One XSLT File</title>
+			<description><![CDATA[This one shows how to write XSLT for both of Umbraco's XML schemas in a single file.]]></description>
+			<link>http://pimpmyxslt.com/articles/multiple-formats/</link>
+			<pubDate>Fri, 16 Jul 2010 02:28:36 +0200</pubDate>
+			<guid isPermaLink="true">http://pimpmyxslt.com/articles/multiple-formats/</guid>
+		</item>
+	
+		<item>
+			<title>An intro to using match templates in Umbraco</title>
+			<description><![CDATA[I'll take one of the default XSLT files in Umbraco and redo it with match templates + the apply-templates instruction instead of the for-each approach. And more...]]></description>
+			<link>http://pimpmyxslt.com/articles/match-templates-intro/</link>
+			<pubDate>Mon, 05 Jul 2010 21:32:23 +0200</pubDate>
+			<guid isPermaLink="true">http://pimpmyxslt.com/articles/match-templates-intro/</guid>
+		</item>
+
+		<item>
+	      <title>Entity Tricks for Your XPaths (Part II)</title>
+	      <description><![CDATA[This is Part II of the venture into using entities for more than just the odd danish character here and there.]]></description>
+	      <link>http://pimpmyxslt.com/articles/entity-tricks-part2/</link>
+	      <pubDate>Fri, 16 Apr 2010 23:38:57 +0200</pubDate>
+	      <guid isPermaLink="true">http://pimpmyxslt.com/articles/entity-tricks-part2/</guid>
+	    </item>	
+
+		<item>
+	      <title>Entity Tricks for Your XPaths (Part I)</title>
+	      <description><![CDATA[This is a simple little trick that’ll help improve the readability as well as the maintainability of the XPaths in your preciousssss XSLT files.
+
+		The examples use Umbraco, but the techniques can be applied to any XSLT file.]]></description>
+	      <link>http://pimpmyxslt.com/articles/entity-tricks-part1/</link>
+	      <pubDate>Sun, 04 Apr 2010 02:12:00 +0200</pubDate>
+	      <guid isPermaLink="true">http://pimpmyxslt.com/articles/entity-tricks-part1/</guid>
+	    </item>	
+	</channel>
+</rss>

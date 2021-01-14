@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Part I of using entities in (Umbraco) XSLT to improve XPath readability. Article for 'Pimp My XSLT'." />
+	<meta name="viewport" content="width=device-width" />
+	<!--
+		Copyright 2010 by Chriztian Steinmeier, http://greystate.dk/	
+	-->
+	<title>Entity Tricks for Your XPaths (Part I) @ Pimp My XSLT</title>
+	<link rel="stylesheet" href="../pimp-article.css" type="text/css" media="screen" charset="utf-8" />
+	
+	<link rel="next" href="/articles/entity-tricks-part2/" />
+	<link rel="index" href="/articles/" />
+
+	<link rel="canonical" href="/articles/entity-tricks-part1/" />
+	
+	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+
+<div class="article">
+	<h1>Entity Tricks for Your XPaths (Part I)</h1>
+	<p class="credit">
+		Written by <a href="http://greystate.dk/">Chriztian Steinmeier</a>.<br />
+		Got comments? I&#8217;m <a href="http://twitter.com/greystate" rel="external">@greystate</a> on Twitter.
+	</p>
+	<div class="intro">
+		<p>
+			This is a simple little trick that&#8217;ll help improve the readability as well as the
+			maintainability of the XPaths in your <em>preciousssss</em> XSLT files.
+		</p>
+		<p>
+			The examples use <a href="http://www.umbraco.org" title="The Friendly CMS">Umbraco</a>,
+			but the techniques can be applied to any XSLT file.
+		</p>
+	</div>
+
+	<p>
+		Let&#8217;s say you have an XSLT snippet like the following, where you want to render all
+		the <code>&lt;node&gt;</code> elements that doesn&#8217;t have the <code>umbracoNaviHide</code> property checked:
+	</p>
+
+<pre><code>&lt;xsl:apply-templates select="$currentPage/node[not(data[@alias = 'umbracoNaviHide'] = 1)]" /&gt;
+</code></pre>
+
+	<p>
+		This XPath <em>really</em> says: &#8220;Apply templates to all the subnodes of the current page, that aren&#8217;t hidden&#8221;.
+	</p>
+
+	<blockquote>
+		<p>Hey, it&#8217;d be cool if you could just write that instead!</p>
+	</blockquote>
+
+	<p>
+		Well, it turns out you can come pretty close, by utilizing a couple of (surprisingly) not-so-well-known facts of XSLT:
+	</p>
+	<ol>
+		<li>An XSLT file is actually an XML file <em>(and thus:)</em></li>
+		<li>The XSLT is parsed by an XML parser before being handed to the XSLT processor</li>
+	</ol>
+
+	<p>
+		&#8212; One particular task that&#8217;s part of that initial parsing step, involves <em>resolving
+		entities</em>, where the parser replaces every occurrence of an ampersand (&amp;) + an identifier + a
+		semicolon (;), with the defined replacement string, e.g., the entity <strong>&amp;lt;</strong> becomes a less-than
+		character (<strong>&lt;</strong>) and <strong>&amp;amp;</strong> becomes an ampersand (<strong>&amp;</strong>).
+	</p>
+
+	<p>
+		There are only five predefined entities in XML (all of which you should know by heart),
+		but you can also create your own custom entities that&#8217;ll be parsed and replaced in this step as well.
+	</p>
+
+	<h2 id="creatingyourownentities">Creating your own entities</h2>
+	<p>
+		To create your own entity you just need to learn some basic DTD syntax &#8212; you put a DOCTYPE
+		at the top of your stylesheet, defining the root element (if you&#8217;re using the default XSLTs
+		in Umbraco, it&#8217;s already there, defining the non-breaking space &#8212; &amp;nbsp):
+	</p>
+
+<pre><code>&lt;!DOCTYPE xsl:stylesheet [ &lt;!ENTITY nbsp "&amp;#x00A0;"&gt; ]&gt;
+</code></pre>
+
+	<p>
+		We&#8217;ll just add our own entity definition inside, and split it into multiple lines for readability:
+	</p>
+
+<pre><code>&lt;!DOCTYPE xsl:stylesheet [
+    &lt;!ENTITY nbsp "&amp;#x00A0;"&gt;
+    &lt;!ENTITY hidden "data[@alias = 'umbracoNaviHide'] = 1"&gt;
+]&gt;
+</code></pre>
+
+	<p>
+		You can now substitute the <strong>hidden</strong> entity anywhere its replacement text occurs,
+		thus the aforementioned apply-templates statement becomes:
+	</p>
+
+<pre><code>&lt;xsl:apply-templates select="$currentPage/node[not(&amp;hidden;)]" /&gt;
+</code></pre>
+
+	<p>
+		I like this so much more because it describes the <em>intent</em> instead of the <em>implementation</em>
+		(which, by the way, <em>could</em> change in a future version of Umbraco, *cough* 4.1beta2 *cough*).
+	</p>
+
+	<div class="explain">
+		<h2>Why/how does this work?</h2>
+		<p>
+			Well, this works because the XSLT processor never saw it happen&#8230;
+		</p>
+
+		<p>
+			You may or may not be aware of the fact, that XSLT is itself &#8216;just&#8217; XML,
+			so what we can do with XML, we can also do with XSLT (including transforming it with XSLT!).
+		</p>
+
+		<p>
+			So whenever an XSLT file is loaded, it&#8217;s actually first parsed by an XML parser that checks for all the usual stuff
+			(encoding, well-formedness and so on), before handing the document over to the XSLT processor.
+		</p>
+
+		<p>
+			But even <em>before that</em>, the XML parser is responsible for resolving any <em>entities</em> defined,
+			so in our case it finds the instances of <code>&amp;hidden;</code> and instantly substitutes
+			the text <code>data[@alias = 'umbracoNaviHide'] = 1</code> for them.
+		</p>
+
+		<p>
+			When the document is later handed to the XSLT processor, the entities are no longer present &#8212; you can see this for yourself
+			by opening the XSLT file directly in Internet Explorer (yes - <em>IE, the bastard child</em> - I just happen to think that IE does the prettiest
+			job of colour coding XML). If you do, you&#8217;ll see that the entities have been expanded to the actual text.
+			The browser uses an internal XSLT file to transform XML files for color-coded viewing, therefore, there&#8217;s
+			also an initial XML parser step going on, taking care of the entities.
+		</p>
+	</div>
+
+	<h2 id="coolextra1">Cool Extra #1</h2>
+
+	<p>
+		This little trick actually helps you overcome the fact that you can&#8217;t use a variable in the match attribute
+		of a template, which is handy for those combos where you apply templates to some special selection, that you also
+		have a tempate for &#8212; i.e., now you can write a template to suppress any hidden node, by saying:
+	</p>
+
+<pre><code>&lt;xsl:template match="node[&amp;hidden;]" /&gt;
+</code></pre>
+
+	<p>
+		&#8212; and have it instantly synced with the apply-templates statement above, regardless of what the property is called.
+	</p>
+
+	<h2 id="coolextra2">Cool Extra #2</h2>
+
+	<p>
+		Using this technique, here&#8217;s a refactored version of the &#8220;ListSubPagesFromCurrentPage.xslt&#8221; file, supplied with
+		Umbraco as one of the standard templates:
+	</p>
+
+	<h3 id="original">Original</h3>
+
+<pre><code>&lt;!DOCTYPE xsl:stylesheet [ &lt;!ENTITY nbsp "&amp;#x00A0;"&gt; ]&gt;
+&lt;xsl:stylesheet 
+    version="1.0" 
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+    xmlns:msxml="urn:schemas-microsoft-com:xslt" 
+    xmlns:umbraco.library="urn:umbraco.library"
+    exclude-result-prefixes="msxml umbraco.library"&gt;
+
+&lt;xsl:output method="xml" omit-xml-declaration="yes"/&gt;
+
+&lt;xsl:param name="currentPage"/&gt;
+
+&lt;xsl:template match="/"&gt;
+
+&lt;!-- The fun starts here --&gt;
+&lt;ul&gt;
+&lt;xsl:for-each select="$currentPage/node [string(data [@alias='umbracoNaviHide']) != '1']"&gt;
+    &lt;li&gt;
+        &lt;a href="{umbraco.library:NiceUrl(@id)}"&gt;
+            &lt;xsl:value-of select="@nodeName"/&gt;
+        &lt;/a&gt;
+    &lt;/li&gt;
+&lt;/xsl:for-each&gt;
+&lt;/ul&gt;
+
+&lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;
+</code></pre>
+
+	<h3 id="refactored">Refactored</h3>
+
+<pre><code>&lt;!DOCTYPE xsl:stylesheet [
+    &lt;!ENTITY nbsp "&amp;#x00A0;"&gt;
+    &lt;!ENTITY hidden "data[@alias = 'umbracoNaviHide'] = 1"&gt;
+    &lt;!ENTITY node "node"&gt;
+]&gt;
+&lt;xsl:stylesheet 
+    version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+    xmlns:umbraco="urn:umbraco.library"
+    exclude-result-prefixes="umbraco"
+&gt;
+
+    &lt;xsl:output method="xml" omit-xml-declaration="yes" /&gt;
+
+    &lt;xsl:param name="currentPage"/&gt;
+
+    &lt;xsl:template match="/"&gt;
+        &lt;ul&gt;
+            &lt;xsl:apply-templates select="$currentPage/&amp;node;" /&gt;
+        &lt;/ul&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;!-- Template for a single node --&gt;
+    &lt;xsl:template match="&amp;node;"&gt;
+        &lt;li&gt;
+            &lt;a href="{umbraco:NiceUrl(@id)}"&gt;
+                &lt;xsl:value-of select="@nodeName" /&gt;
+            &lt;/a&gt;
+        &lt;/li&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;!-- No output for hidden nodes --&gt;
+    &lt;xsl:template match="&amp;node;[&amp;hidden;]" /&gt;
+
+&lt;/xsl:stylesheet&gt;
+</code></pre>
+
+	<p>
+		My changes include:
+	</p>
+	<ul>
+		<li>using <code>apply-templates</code> instead of <code>for-each</code></li>
+		<li>Separate template for hidden nodes</li>
+		<li>Custom entities for <code>node</code> elements and the <code>umbracoNaviHide</code> property</li>
+	</ul>
+	<p>
+		&#8212;Now, <em>why on earth</em> would I define an entity for &#8220;node&#8221;,
+		just to have it output &#8220;node&#8221;? Doesn&#8217;t make sense, or &#8230;?
+	</p>
+
+	<p>
+		Well, what happens if we replace the two entity-definitions with this:
+	</p>
+
+<pre><code>&lt;!ENTITY hidden "umbracoNaviHide = 1"&gt;
+&lt;!ENTITY node "*[@isDoc]"&gt;
+</code></pre>
+
+	<p>
+		? - Yep, you guessed it&#8212;instant 4.1 compatibility, out-of-the-box!
+	</p>
+	<p>
+		&#8212;Now&#8217;s a good time to <a href="/articles/entity-tricks-part2/">go read Part II&#8230;</a>
+	</p>
+</div>
+<div id="footer">
+	Copyright &copy; 2010 <a href="http://greystate.dk/who/" rel="author">Chriztian Steinmeier</a> for <a href="http://pimpmyxslt.com/">Pimp My XSLT</a>.
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11788998-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>

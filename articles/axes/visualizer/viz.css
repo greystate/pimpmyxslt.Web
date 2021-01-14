@@ -1,0 +1,225 @@
+/*
+	Colors: "Garden swimming pool" by johan.kohlin (via <saturation>)
+	=================================================================
+		96ca2d	 	150, 202, 202
+		b5e655	 	181, 230, 230
+		edf7f2	 	237, 247, 247
+		4bb5c1	 	75, 181, 181
+		7fc6bc	 	127, 198, 198
+*/
+
+@variables {
+	color1dark: #96ca2d;
+	color1lite: #b5e655;
+	lightColor: #edf7f2;
+	color2lite: #4bb5c1;
+	color2dark: #7fc6bc;
+	
+	bright: #fcfcfc;
+	dark: #333;
+}
+
+body {
+	font: normal 16px "Bitstream Vera Sans", "Lucida Grande", Monaco, "Courier New", monospace;
+	line-height: 22px;
+}
+
+h1 {
+	text-align: center;
+}
+
+p.info {
+	font-size: smaller;
+	width: 80%;
+	margin: 1em auto;
+	text-align: center;
+}
+
+p.xpath {
+	margin: 0.2em 1em;
+	font-size: smaller;
+	text-align: center;
+}
+
+
+#screen a:link,
+#screen a:visited,
+p.info a {
+	text-decoration: none;
+	color: #999;
+	padding-left: 24px;
+}
+
+#screen a.current,
+#screen a.select {
+	border: 0;
+	padding: 2px 6px 2px 24px;
+	-webkit-border-radius: 4px;
+}
+
+#screen a.current.select {
+	border-width: 1px;
+	border-style: solid;
+	border-color: #333; /* var(dark) */
+}
+
+#screen a.select {
+	background-color: #4bb5c1; /* var(color2lite) */
+	font-weight: bold;
+	color: #000;
+}
+
+#screen a.current {
+	background-color: #b5e655; /* var(color1lite) */
+	border-style: dotted;
+	border-color: #96ca2d; /* var(color1dark) */
+	text-shadow: 0 1px 0 #edf7f2;
+}
+
+a.nofirst {
+	background-color: #7fc6bc; /* var(color2dark) */
+}
+
+
+ul#viz {
+	padding-right: 1em;
+	list-style: none;
+	width: 400px;
+	float: left;
+}
+
+ul#viz li {
+	margin: 0.5em auto;
+	list-style: none;
+}
+
+ul#legend {
+	list-style: none;
+	font-size: 50%;
+}
+
+ul#legend li {
+	margin: 4px;
+}
+
+ul#legend li a {
+	cursor: default;
+}
+
+ul#viz ul {
+	padding: 0 0 0 1em;
+}
+
+#screen, #axes {
+	width: 50%;
+	border-radius: 12px;
+	-webkit-border-radius: 12px;
+	-moz-border-radius: 12px;
+	border: 1px inset #ccc;
+	background: #edf7f2; /* var(lightColor) */
+	margin: 1em auto;
+}
+
+#screen {
+	clear: both;
+}
+
+#axes {
+	width: 220px;
+	float: right;
+	border-style: outset;
+	font-size: smaller;
+	margin: 8px -25px 8px 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+	-webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+	-moz-box-shadow: 0 4px 2px rgba(0, 0, 0, 0.4);
+	background: #d2dcd9;
+}
+
+ul#axis-selector {
+	list-style: none;
+	padding: 0;
+}
+
+ul#axis-selector a {
+	display: block;
+	margin: 0 4px;
+	-webkit-border-radius: 4px;
+}
+
+ul#axis-selector a.current {
+	font-weight: bold;
+	color: #333;
+	border: 1px solid #c3cdcb;
+	border-width: 1px 0;
+	background: transparent;
+	border-radius: 0;
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+}
+
+a.folder {
+	background-image: url(folder.gif);
+	background-position: 4px 3px;
+	background-repeat: no-repeat;
+}
+
+a.doc {
+	background-image: url(doc.gif);
+	background-position: 4px 3px;
+	background-repeat: no-repeat;
+}
+
+form {
+	float: right;
+}
+
+#summary {
+/* 	position: absolute;
+	bottom: 10px;
+	right: 10px;
+ */
+	width: 220px;
+	float: right;
+	margin: 8px -25px 0 0;
+	font-size: 80%;
+	text-align: center;
+}
+
+#summary strong {
+	font-size: 2em;
+	display: block;
+}
+
+p.credit {
+	text-align: center;
+}
+
+
+/* Containing floats */
+.contain:after {
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+
+/* IE6 */ 
+* html .contain {
+	height: 1%;
+}
+
+/* IE7 */
+*:first-child+html .contain {
+	min-height: 1px;
+}
+
+
+/* Some small iPhone + iPad adjustments */
+@media screen and (max-device-width: 480px), screen and (max-device-width: 1024px) {
+	#screen { width: 90%; font-size: 1.5em; }
+	#viz { width: 50%; }
+	#axes, #summary { width: 40%; }
+	#axis-selector li { margin: 0.5em 0;}
+}

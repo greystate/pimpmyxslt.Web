@@ -1,0 +1,258 @@
+/* 
+    pimp-article.css
+    Pimp My XSLT
+    
+    Created by Chriztian Steinmeier on 2010-04-04.
+    Copyright 2010 pimpmyxslt.com. All rights reserved.
+*/
+
+body {
+	background: #eee;
+	color: #0a1e59;
+	font: normal medium "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+div.article, div#footer {
+	width: 80%;
+	max-width: 700px;
+	margin: auto;
+}
+
+h1, h2 { 
+	font-family: Palatino, Georgia, Times, serif;
+	color: #204089;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+	margin: 1.5em 0 0;
+}
+
+h1 { font-size: 1.8em;}
+h2 { font-size: 1.4em;}
+h3 { font-size: 1.1em;}
+
+ul {
+	list-style: square;
+}
+
+a:link {
+	color: #577bd1;
+}
+
+a:visited {
+	color: #3a528c;
+}
+
+p.credit {
+	font-size: smaller;
+	text-align: right;
+	color: #b4b4b4;
+}
+
+p.credit a[rel=index] {
+	float: left;
+}
+
+blockquote {
+	font-style: italic;
+	border-left:2px solid #5a4c40;
+	padding: 0.1em 1em;
+}
+
+pre {
+	margin: 1em 0;
+	padding: 0.5em 1em;
+	background: #d9d9d9;
+	border-radius: 6px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+}
+
+code {
+	font-family: monaco, courier, monospace;
+	color: #314159;
+}
+
+p.figure {
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	
+	-webkit-box-shadow: 0 0 4px rgba(0, 0, 0, 0.75) inset;
+	-moz-box-shadow: 0 0 4px rgba(0, 0, 0, 0.75) inset;
+	box-shadow: 0 0 4px rgba(0, 0, 0, 0.75) inset;
+
+	padding: 6px;
+	background-color: #fff;
+	text-align: center;
+	
+	margin-bottom: 3em;
+}
+
+div.explain {
+/* 			float: right; */
+/* 			width: 20em; */
+	background: #fff;
+	padding: 1em;
+	font-size: 85%;
+	border: 1px solid #000;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	
+	-webkit-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.75);
+	-moz-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.75);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.75);
+}
+
+.explain code {
+	font-weight: bold;
+	font-size: 1.1em;
+}
+
+.explain pre code {
+	font-weight: normal;
+}
+
+.explain ul {
+	margin: 1em 0 0 1.8em;
+	padding: 0;
+}
+
+p.critical {
+	background-color: #c00;
+	color: #fff;
+/* 	background-color: #d70000; */
+/* 	color: #eee; */
+	border-radius: 6px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	padding: 1em 3em;
+	margin: 1em 3em;
+	text-align: center;
+}
+
+p.critical a:link,
+p.critical a:visited {
+	color: #ff8100;
+}
+
+p.update {
+	background-color: #faf3a0;
+	color: #000;
+	border-radius: 6px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border: 1px solid #a9a9a9;
+	padding: 1em;
+}
+
+p.update:before {
+	content: "UPDATE";
+	font: 10px "Monaco", "Verdana", sans-serif;
+	background: #000;
+	color: #faf3a0;
+	padding: 2px 5px 1px 5px;
+	display: inline-block;
+	margin-right: 0.5em;
+	border-radius: 4px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+}
+
+div.intro {
+	border-top: 2px solid #cecece;
+	border-bottom: 2px solid #cecece;
+	padding: 0 1em;
+	font-size: 90%;
+}
+
+span.hiline {
+	background: #ff8000;
+	background: rgba(255, 128, 0, 0.2);
+	padding: 3px 12px;
+	margin-left: -12px;
+	font-weight: bold;
+	border-radius: 6px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+}
+
+div.footnotes {
+	font-size: 0.8em;
+	color: #666;
+}
+
+div.footnotes :target {
+	background: #caf965;
+}
+
+div#footer {
+	padding: 1em 0;
+	text-align: center;
+	border-top: 1px solid #ccc;
+	font-size: 80%;
+	color: #999;
+}
+
+/* Gist overrides: */
+.gist .gist-file .gist-data {
+	background: #fff !important;
+}
+
+.gist .gist-file,
+.gist .gist-file .gist-data {
+	-webkit-border-top-left-radius: 8px;
+	-moz-border-radius-topleft: 8px;
+	border-top-left-radius: 8px;
+	-webkit-border-top-right-radius: 8px;
+	-moz-border-radius-topright: 8px;
+	border-top-right-radius: 8px;
+}
+
+.gist .gist-file pre {
+	padding-top: 6px;
+	font-size: 0.75em; /* 12px (12/16) */
+}
+
+.gist-meta {
+	opacity: 0.4;
+	font-size: 0.75em !important; /* 12px (12/16) */
+}
+
+
+/* Some small iPhone adjustments */
+@media screen and (max-device-width: 480px) {
+    body { font-size: small; }
+	div.article { width: auto; max-width: auto; }
+	h1 { font-size: 1.6em; }
+	pre { overflow-x: auto; }
+	p.figure img {
+		max-width: 90%;
+	}
+}
+
+/* And of course the LOST targets :-) */
+#lost:target {
+	
+}
+
+#lost:target::after {
+	content: "4 8 15 16 23 42";
+/* 	font: 32px; */
+	display: block;
+	position: fixed;
+	bottom: 25px;
+	right: 25px;
+	padding: 0.45em;
+	border: 2px solid hsla(0, 0%, 100%, 0.8);
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+	-webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+	-moz-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+	background: #132e77;
+	background: hsla(230, 90%, 16%, 0.9);
+	color: #fff;
+	text-shadow: 0 1px 2px hsla(120, 0%, 25%, 0.3);
+}
+

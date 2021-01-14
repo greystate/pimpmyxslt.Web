@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Tips for working with Dictionary Items in Umbraco XSLT macros. Article for 'Pimp My XSLT'." />
+	<meta name="viewport" content="width=device-width" />
+	<!--
+		Copyright 2011 by Chriztian Steinmeier, http://greystate.dk/	
+	-->
+	<title>Using Dictionary Items in XSLT @ Pimp My XSLT</title>
+	<link rel="stylesheet" href="/articles/pimp-article.css" type="text/css" media="screen" charset="utf-8" />
+	
+	<link rel="index" href="/articles/" />
+
+	<link rel="canonical" href="/articles/dictionary-items/" />
+	
+	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+
+<div class="article">
+	<h1>Using Dictionary Items in XSLT</h1>
+	<p class="credit">
+		Written by <a href="http://greystate.dk/">Chriztian Steinmeier</a>.<br />
+		Got comments? I&#8217;m <a href="http://twitter.com/greystate" rel="external">@greystate</a> on Twitter.
+		<a href="/articles/" rel="index">&#x2190; Back to Article Index</a>
+	</p>
+	<div class="intro">
+		<p>
+			If you&#8217;ve been working on a multi-language website in Umbraco, you&#8217;ve probably
+	        been using the Dictionary for the miscellaneous labels that occur throughout the site, e.g., form
+	        labels, headers, error messages etc.
+		</p>
+		<p>
+			I&#8217;ll show you how I&#8217;ve been handling this in my (XSLT) macros, and hopefully there&#8217;s
+			something for you to use the next time you&#8217;re about to use the Dictionary Items in XSLT.
+		</p>
+	</div>
+
+	<h2>Prerequisites</h2>
+
+	<p>To use the Dictionary we need to do a couple of things first:</p>
+
+	<ol>
+		<li>We should create the languages we need (Settings > Languages)</li>
+		<li>We need to assign a Domain &amp; Language to the top-level node(s) in our website</li>
+	</ol>
+
+	<p>When that&#8217;s done, we can go ahead and create some Dictionary Items for use in our site.</p>
+
+	<h2>The Simplest Thing That Could Possibly Work</h2>
+
+	<p>
+		In short, if you&#8217;ve created a Dictionary Item called &#8220;SearchTitle&#8221;, you can get the localized
+		version of that item using the GetDictionaryItem() method in umbraco.library - like this:
+	</p>
+
+	<script src="https://gist.github.com/938957.js?file=dictionary-items-01.xslt"></script>
+	
+	<p>
+		Umbraco will decide which language the current request belongs to and pick the assigned value for the
+		key &#8220;SearchTitle&#8221;, which it will return to the XSLT.
+	</p>
+
+	<p>
+		This is all fine and dandy, and you can fetch any Dictionary Item you&#8217;ve created using this call,
+		but soon your code will start to look like it could use a good refactoring. I&#8217;d say that if you&#8217;re
+		fetching more than a few items you should start to get that &#8220;Um, I guess it must be possible to not call
+		that library function all the time&#8230;&#8221; feeling&#8230;
+	</p>
+
+	<script src="https://gist.github.com/938957.js?file=dictionary-items-02.xslt"></script>
+	
+	<h2>Refactor &amp; Pluralize!</h2>
+
+	<p>
+		So apparently the Core team got that feeling too and decided to give us (totally free of course) a way to
+		fetch more than one Dictionary Item at a time, by creating the <code>GetDictionaryItems()</code> method. Good call.
+	</p>
+
+	<p>It works like this: In the Dictionary you create some items below a top-level item, e.g.:</p>
+
+<pre><code>Dictionary
+    SearchLabels
+        SearchTitle
+        SearchButtonText
+        SearchFieldPlaceholder
+</code></pre>
+
+	<p>When you call the pluralized method with the key &#8220;SearchLabels&#8221; you get the following XML back:</p>
+
+	<script src="https://gist.github.com/938957.js?file=dictionary-items-03.xml"></script>
+	
+	<p>You should of course put that into a variable so you have access to all the labels returned:</p>
+
+	<script src="https://gist.github.com/938957.js?file=dictionary-items-04.xslt"></script>
+
+	<h2>OK, That Didn&#8217;t Help</h2>
+
+	<p>
+		While this will make sure that we only call the library funtion once, it won&#8217;t exactly make our
+		code look less cluttered:
+	</p>
+
+	<script src="https://gist.github.com/938957.js?file=dictionary-items-05.xslt"></script>
+
+	<p>But of course there&#8217;s a way around that - but first a little detour.</p>
+
+	<h2 id="lost">Managing Lots Of Dictionary Items</h2>
+
+	<p>
+		You may already have tried to create a bunch of Dictionary Items, nested in a couple of levels, and
+		subsequently tried to fetch them all in one swoop with the <code>GetDictionaryItems()</code> method. Then you&#8217;ve
+		also encountered the limitation/feature of it not returning more than one level of items, i.e., you can only
+		access the children of an item, neither grandchildren nor grandchildren&#8217;s children etc.
+	</p>
+
+	<p>
+		What I do is to structure the Dictionary Items below one level of &#8220;headers&#8221;, so the first level of items
+		are all wrappers for the items under them. This makes it pretty easy to organize the items in sections that
+		match the pages they&#8217;re used in.
+	</p>
+
+	<p>But we need to have easy access to them from XSLT. Enter secret weapon #4815162342 - joining nodesets&#8230;</p>
+
+	<p>Let&#8217;s say I have three sections of Dictionary Items; &#8220;Frontpage&#8221;, &#8220;Search&#8221; and &#8220;Products&#8221;.</p>
+
+	<p>What I do in XSLT is this: </p>
+
+	<script src="https://gist.github.com/938957.js?file=dictionary-items-06.xslt"></script>
+
+	<p>
+		By way of making the individual variables select just the <code>DictionaryItem</code> elements, the resulting <code>$labels</code>
+		variable can be used simply like this to get any label from the three sets:
+	</p>
+
+	<script src="https://gist.github.com/938957.js?file=dictionary-items-07.xslt"></script>
+
+	<p>
+		Happiness prevails in my code now - I&#8217;m down to saying &#8220;Give me the label with the key &#8216;SearchButtonText&#8217;&#8221;
+		and no excess calls to umbraco.library.
+	</p>
+
+	<h2>Hey, What About The Bonus???</h2>
+
+	<p>Bonus? Oh yes, how could I forget :-)</p>
+
+	<p>
+		Well, if you&#8217;re processing some custom XML or you&#8217;ve named your Dictionary Items after the
+		properties on a Document Type, you can use a &#8220;moded template&#8221; to handle some of your labels.
+	</p>
+
+	<p>The template looks like this:</p>
+
+	<script src="https://gist.github.com/938957.js?file=dictionary-items-08.xslt"></script>
+
+	<p>
+		Then if you have a <code>NewsItem</code> DocumentType with a <code>newsDate</code> property, you could use it like this to get
+		the translated value for the &#8216;Date&#8217; label:
+	</p>
+
+	<script src="https://gist.github.com/938957.js?file=dictionary-items-09.xslt"></script>
+
+	<p>
+		These kinds of abstractions definitely suit my person well &#8212; your milage may vary, as they say, but
+		nevertheless I hope you&#8217;ve enjoyed another article, and that you&#8217;ll continue to improve your
+		XSLT skills every day.
+	</p>
+	
+</div><!-- #article -->
+
+<div id="footer">
+	Copyright &copy; 2011 <a href="http://greystate.dk/who/" rel="author">Chriztian Steinmeier</a> for <a href="http://pimpmyxslt.com/">Pimp My XSLT</a>.
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11788998-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>

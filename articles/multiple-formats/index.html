@@ -1,0 +1,458 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Learn how to provide support for both of the XML schemas in Umbraco in a single XSLT file. Article for 'Pimp My XSLT'." />
+	<meta name="viewport" content="width=device-width" />
+	<!--
+		Copyright 2010 by Chriztian Steinmeier, http://greystate.dk/	
+	-->
+	<title>Supporting Multiple Formats In One XSLT File @ Pimp My XSLT</title>
+	<link rel="stylesheet" href="../pimp-article.css" type="text/css" media="screen" charset="utf-8" />
+	
+	<link rel="previous" href="/articles/match-templates-intro/" />
+	<link rel="index" href="/articles/" />
+
+	<link rel="canonical" href="/articles/multiple-formats/" />
+	
+	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+
+<div class="article">
+	<h1>Supporting Multiple Formats In One XSLT File</h1>
+	<p class="credit">
+		Written by <a href="http://greystate.dk/">Chriztian Steinmeier</a>.<br />
+		Got comments? I&#8217;m <a href="http://twitter.com/greystate" rel="external">@greystate</a> on Twitter.
+	</p>
+	<div class="intro">
+		<p>
+			If you&#8217;re creating an Umbraco package, and you&#8217;d like it to work with both the &#8220;legacy&#8221; XML schema
+			and the new 4.5 schema, this is the article you want to read. I&#8217;ll show you how to write your XSLT file to
+			support both formats within the same file.
+		</p>
+	</div>
+
+	<p>If you&#8217;re not familiar with the &#8220;match templates&#8221; approach to XSLT (as opposed to &#8220;for-each&#8221;) I suggest you
+	<a href="http://pimpmyxslt.com/articles/match-templates-intro/">swing by that article</a> first, to fully understand what I&#8217;m doing here (and why).</p>
+
+	<p>Once again, I&#8217;ll be refactoring an XSLT file (this time from a real project I worked on) that renders a list of News items:</p>
+
+	<h3>The original &#8220;RenderNewsList.xslt&#8221;</h3>
+
+<pre><code>&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;xsl:stylesheet
+    version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:umb="urn:umbraco.library"
+    exclude-result-prefixes="umb"
+&gt;
+
+    &lt;xsl:output method="xml" indent="yes" omit-xml-declaration="yes" /&gt;
+
+    &lt;xsl:param name="currentPage" /&gt;
+
+    &lt;xsl:variable name="root" select="$currentPage/ancestor-or-self::node[@level = 1]" /&gt;
+    &lt;xsl:variable name="newsRoot" select="$root/node[@nodeTypeAlias = 'Nyheder']" /&gt;
+
+    &lt;xsl:template match="/"&gt;
+        &lt;ul&gt;
+            &lt;xsl:apply-templates select="$newsRoot/node" /&gt;
+        &lt;/ul&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;xsl:template match="node"&gt;
+        &lt;li&gt;
+            &lt;h4&gt;
+                &lt;xsl:value-of select="data[@alias = 'propertyNewsHeader']" /&gt;
+            &lt;/h4&gt;
+            &lt;p&gt;
+                &lt;xsl:value-of select="data[@alias = 'propertyNewsSummary']" /&gt;
+            &lt;/p&gt;
+            &lt;p&gt;
+                &lt;a href="{umb:NiceUrl(data[@alias = 'propertyNewsLink'])}"&gt;Læs mere&lt;/a&gt;
+            &lt;/p&gt;
+        &lt;/li&gt;
+    &lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;
+</code></pre>
+
+	<p>To recap &#8212; going from 4.0 to 4.5, all references to <code>node</code> should be changed to the value of the <code>@nodeTypeAlias</code> attribute
+	or, if it needs to be more generic, the selector <code>*[@isDoc]</code>. Also, <code>data[alias = 'propertyName']</code> should be changed to just <code>propertyName</code> to
+	work in the new schema.</p>
+
+	<p>So we need to address the following:</p>
+
+	<ol>
+		<li>The <code>$root</code> and <code>$newsRoot</code> variables use &#8220;node&#8221;</li>
+		<li>The root (<code>match="/"</code>) template uses &#8220;node&#8221;</li>
+		<li>The node template&#8217;s match attribute uses &#8220;node&#8221;</li>
+		<li>The node template&#8217;s content uses <code>data[@alias = '...']</code></li>
+	</ol>
+
+	<h2>How we&#8217;ll do it</h2>
+
+	<p>Because the two XML formats have virtually no overlap, we can be pretty smart about this&#8212;e.g., take a statement like this in a legacy-format XSLT file:</p>
+
+<pre><code>&lt;xsl:apply-templates select="$currentPage/node[@nodeTypeAlias = 'GuitarTAB']" /&gt;
+</code></pre>
+
+	<p>In the new format, this would become:</p>
+
+<pre><code>&lt;xsl:apply-templates select="$currentPage/GuitarTAB" /&gt;
+</code></pre>
+
+	<p>If we want to support both formats in the same file, we could actually just apply both in succession:</p>
+
+<pre><code>&lt;xsl:apply-templates select="$currentPage/node[@nodeTypeAlias = 'GuitarTAB']" /&gt;
+&lt;xsl:apply-templates select="$currentPage/GuitarTAB" /&gt;
+</code></pre>
+
+	<p>(Technically, they will both be executed but only the one that works with the format being used will output anything)</p>
+
+	<p>We can collapse the two into one line if we like:</p>
+
+<pre><code>&lt;xsl:apply-templates select="$currentPage/GuitarTAB | $currentPage/node[@nodeTypeAlias = 'GuitarTAB']" /&gt;
+</code></pre>
+
+	<p>OR, we can do another little XPath thingy-ma-jiggery:</p>
+
+<pre><code>&lt;xsl:apply-templates select="$currentPage/*[@nodeTypeAlias = 'GuitarTAB' or self::GuitarTAB]" /&gt;
+</code></pre>
+
+	<p>Pick whichever technique that looks good to you - my reasoning goes something like this:</p>
+
+	<ul>
+	<li>If it&#8217;s a simple path like <code>select="GuitarTAB"</code>, I&#8217;ll go with combining sets:</li>
+	</ul>
+
+<pre><code>select="node[@nodeTypeAlias = 'GuitarTAB'] | GuitarTAB"</code></pre>
+
+	<ul>
+	<li>If it&#8217;s more than that, I&#8217;ll combine in a predicate, so I&#8217;m not repeating all the parent steps, e.g.: </li>
+	</ul>
+
+<pre><code>select="$currentPage/*[@nodeTypeAlias = 'GuitarTAB' or self::GuitarTAB]"</code></pre>
+
+	<p>So here we go, rewriting the patterns and expressions of the file:</p>
+
+	<h2>Converting the variables</h2>
+
+	<ul>
+	<li>The <code>$root</code> variable is very easy to convert: we&#8217;ll just replace &#8220;node&#8221; with an asterisk, since only Documents have the level attribute
+	(and we&#8217;re searching the ancestor tree of <code>$currentPage</code> which, can only contain Documents)</li>
+	<li>The <code>newsRoot</code> variable can be converted by adding <code>or self::Nyheder</code> to the predicate</li>
+	</ul>
+
+	<h3>Variables fixed</h3>
+
+<pre><code>&lt;xsl:variable name="root" select="$currentPage/ancestor-or-self::*[@level = 1]" /&gt;
+&lt;xsl:variable name="newsRoot" select="$root/*[@nodeTypeAlias = 'Nyheder' or self::Nyheder]" /&gt;
+</code></pre>
+
+	<h2>The root template</h2>
+
+	<p>The original root template just creates an unordered list and then applies templates to the childnodes of the $newsRoot page&#8212;again, we&#8217;ll substitute an asterisk for &#8220;node&#8221; and call it a day:</p>
+
+	<h3>New version of the root template</h3>
+
+<pre><code>&lt;xsl:template match="/"&gt;
+    &lt;ul&gt;
+        &lt;xsl:apply-templates select="$newsRoot/*" /&gt;
+    &lt;/ul&gt;
+&lt;/xsl:template&gt;
+</code></pre>
+
+	<p>(Of course, this works closely in tandem with the fact that &#8216;Nyheder&#8217; is set up to only allow one specific type of children)</p>
+
+	<h2>The <code>node</code> template</h2>
+
+	<p>First of all, we need to change the match attribute, as only the old format contains &#8220;node&#8221; elements, so let&#8217;s add its nodeTypeAlias
+	to the match pattern:</p>
+
+	<h3>Dual format template matching</h3>
+
+<pre><code>&lt;xsl:template match="node | NewsItem"&gt;
+    ...
+&lt;/xsl:template&gt;
+</code></pre>
+
+	<p>The template will now work for either format, so let&#8217;s look inside and see if we can get the final bits to comply.</p>
+
+	<h2>Rendering the properties</h2>
+
+	<p>Getting to a property in a cross-format way is done by combining the old syntax with the new one in a set, so:</p>
+
+<pre><code>&lt;xsl:value-of select="data[@alias = 'numberOfTappingFingersAvailable']" /&gt;
+</code></pre>
+
+	<p>- becomes:</p>
+
+<pre><code>&lt;xsl:value-of select="data[@alias = 'numberOfTappingFingersAvailable'] | numberOfTappingFingersAvailable" /&gt;
+</code></pre>
+
+	<p>Again, this works because the new format won&#8217;t  have an element named &#8220;data&#8221;, and the legacy-format doesn&#8217;t have custom-named elements, so only one of them will actually return a node to take the value of. </p>
+
+	<p>Updating the contents of the template gives us this:</p>
+
+	<h3>Updated property accessors</h3>
+
+<pre><code>&lt;li&gt;
+    &lt;h4&gt;
+        &lt;xsl:value-of select="data[@alias = 'propertyNewsHeader'] | propertyNewsHeader" /&gt;
+    &lt;/h4&gt;
+    &lt;p&gt;
+        &lt;xsl:value-of select="data[@alias = 'propertyNewsSummary'] | propertyNewsSummary" /&gt;
+    &lt;/p&gt;
+    &lt;p&gt;
+        &lt;a href="{umb:NiceUrl(data[@alias = 'propertyNewsLink'] | propertyNewsLink)}"&gt;Læs mere&lt;/a&gt;
+    &lt;/p&gt;
+&lt;/li&gt;
+</code></pre>
+
+	<p>And then the complete file for reference:</p>
+
+	<h3>The final cross-version compatible &#8220;RenderNewsList.xslt&#8221;</h3>
+
+<pre><code>&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;xsl:stylesheet
+    version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:umb="urn:umbraco.library"
+    exclude-result-prefixes="umb"
+&gt;
+
+    &lt;xsl:output method="xml" indent="yes" omit-xml-declaration="yes" /&gt;
+
+    &lt;xsl:param name="currentPage" /&gt;
+
+    &lt;xsl:variable name="root" select="$currentPage/ancestor-or-self::*[@level = 1]" /&gt;
+    &lt;xsl:variable name="newsRoot" select="$root/*[@nodeTypeAlias = 'Nyheder' or self::Nyheder]" /&gt;
+
+    &lt;xsl:template match="/"&gt;
+        &lt;ul&gt;
+            &lt;xsl:apply-templates select="$newsRoot/*" /&gt;
+        &lt;/ul&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;xsl:template match="node | NewsItem"&gt;
+        &lt;li&gt;
+            &lt;h4&gt;
+                &lt;xsl:value-of select="data[@alias = 'propertyNewsHeader'] | propertyNewsHeader" /&gt;
+            &lt;/h4&gt;
+            &lt;p&gt;
+                &lt;xsl:value-of select="data[@alias = 'propertyNewsSummary'] | propertyNewsSummary" /&gt;
+            &lt;/p&gt;
+            &lt;p&gt;
+                &lt;a href="{umb:NiceUrl(data[@alias = 'propertyNewsLink'] | propertyNewsLink)}"&gt;Læs mere&lt;/a&gt;
+            &lt;/p&gt;
+        &lt;/li&gt;
+    &lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;
+</code></pre>
+
+	<p>That&#8217;s it! We&#8217;re done. Oh wait &#8230;</p>
+
+	<hr />
+
+	<h2>One more thing</h2>
+
+	<p>
+		I thought I&#8217;d back this up with a little extra for the die-hard XSLT fans out there
+		(looking at <a href="http://twitter.com/leekelleher" title="Lee Kelleher">@leekelleher</a>,
+		<a href="http://twitter.com/warrenbuckley" title="Warren Buckley">@warrenbuckley</a>,
+		<a href="http://twitter.com/drobar" title="Douglas Robar">@drobar</a>,
+		<a href="http://twitter.com/cultiv" title="Sebastiaan Janssen">@cultiv</a> &amp; countless others, who&#8217;ve been
+		flooding me with great comments, feedback, praise and the general feel-good-ness of The Umbraco Spirit that I&#8217;ve come to love so much),
+		so here&#8217;s how I Unit-Tested my way through this stylesheet.
+	</p>
+
+	<blockquote>
+	  <p>Did you just mention &#8220;Unit Test&#8221; in the same sentence as &#8220;XSLT&#8221;?</p>
+	</blockquote>
+
+	<p>Yes :-)</p>
+
+	<p>
+		OK, I always knew I&#8217;d want to create two test documents; one in the legacy XML format and another one in the new format.
+		I would run the stylesheet on each file to make sure that what I wrote was actually working. Automation is King,
+		so I dug out my copy of <a href="http://code.google.com/p/xspec/" title="The XSpec Project on Google Code">Jeni Tennison&#8217;s excellent XSpec project</a>,
+		ran <code>svn update</code> to get the latest, and checked the shortcut I&#8217;d assigned to the TextMate command
+		I&#8217;d created long ago&#8230; ready, set, go.
+	</p>
+
+	<h2>XSpec</h2>
+
+	<p>No boring setup steps or configuration recipes here&#8212;e-mail me if you&#8217;re trying it out and you&#8217;re having trouble&#8212;here&#8217;s the XSpec file (don&#8217;t mind the danish stuff&#8212;think of it as Lorem Ipsum :-)</p>
+
+	<h3>The XSpec file for &#8220;RenderNewsList.xslt&#8221;</h3>
+
+<pre><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;x:description
+    stylesheet="../RenderNewsList.xslt"
+    xslt-version="1.0"
+    xmlns:x="http://www.jenitennison.com/xslt/xspec"
+&gt;
+
+    &lt;x:scenario label="when processing the fixture file for 4.0"&gt;
+        &lt;x:context href="file:///Users/chriz/Development/XSLT/RenderNewsList-conversion/test/fixture_newslist_4-0.xml" select="/"&gt;
+            &lt;x:param name="newsRoot" select="document('file:///Users/chriz/Development/XSLT/RenderNewsList-conversion/test/fixture_newslist_4-0.xml')/root/node/node[@nodeTypeAlias = 'Nyheder']" /&gt;
+        &lt;/x:context&gt;
+        &lt;x:expect label="it should produce a list of three NewsItems"&gt;
+            &lt;ul&gt;
+                &lt;li&gt;
+                    &lt;h4&gt;Dette er nyhed #1&lt;/h4&gt;
+                    &lt;p&gt;Der er et par ting vi skal vide om...&lt;/p&gt;
+                    &lt;p&gt;
+                        &lt;a href="1201"&gt;Læs mere&lt;/a&gt;
+                    &lt;/p&gt;
+                &lt;/li&gt;
+                &lt;li&gt;
+                    &lt;h4&gt;Dette er nyhed #2&lt;/h4&gt;
+                    &lt;p&gt;Der er et par ting vi skal vide om...&lt;/p&gt;
+                    &lt;p&gt;
+                        &lt;a href="1202"&gt;Læs mere&lt;/a&gt;
+                    &lt;/p&gt;
+                &lt;/li&gt;
+                &lt;li&gt;
+                    &lt;h4&gt;Dette er nyhed #3&lt;/h4&gt;
+                    &lt;p&gt;Der er et par ting vi skal vide om...&lt;/p&gt;
+                    &lt;p&gt;
+                        &lt;a href="1203"&gt;Læs mere&lt;/a&gt;
+                    &lt;/p&gt;
+                &lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/x:expect&gt;
+    &lt;/x:scenario&gt;
+
+    &lt;x:scenario label="when processing the fixture file for 4.5"&gt;
+        &lt;x:context href="file:///Users/chriz/Development/XSLT/RenderNewsList-conversion/test/fixture_newslist_4-5.xml" select="/"&gt;
+            &lt;x:param name="newsRoot" select="document('file:///Users/chriz/Development/XSLT/RenderNewsList-conversion/test/fixture_newslist_4-5.xml')/root/Site/Nyheder" /&gt;
+        &lt;/x:context&gt;
+        &lt;x:expect label="it should produce a list of three NewsItems"&gt;
+            &lt;ul&gt;
+                &lt;li&gt;
+                    &lt;h4&gt;Dette er nyhed #1&lt;/h4&gt;
+                    &lt;p&gt;Der er et par ting vi skal vide om...&lt;/p&gt;
+                    &lt;p&gt;
+                        &lt;a href="1201"&gt;Læs mere&lt;/a&gt;
+                    &lt;/p&gt;
+                &lt;/li&gt;
+                &lt;li&gt;
+                    &lt;h4&gt;Dette er nyhed #2&lt;/h4&gt;
+                    &lt;p&gt;Der er et par ting vi skal vide om...&lt;/p&gt;
+                    &lt;p&gt;
+                        &lt;a href="1202"&gt;Læs mere&lt;/a&gt;
+                    &lt;/p&gt;
+                &lt;/li&gt;
+                &lt;li&gt;
+                    &lt;h4&gt;Dette er nyhed #3&lt;/h4&gt;
+                    &lt;p&gt;Der er et par ting vi skal vide om...&lt;/p&gt;
+                    &lt;p&gt;
+                        &lt;a href="1203"&gt;Læs mere&lt;/a&gt;
+                    &lt;/p&gt;
+                &lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/x:expect&gt;
+    &lt;/x:scenario&gt;
+
+&lt;/x:description&gt;
+</code></pre>
+
+	<p>- and these are the two test files or &#8220;fixtures&#8221; as I call them:</p>
+
+	<h3>File: &#8220;fixture_newslist_4-0.xml&#8221; (legacy-format)</h3>
+
+<pre><code>&lt;root id="-1"&gt;
+    &lt;node level="1" nodeTypeAlias="Site"&gt;   
+        &lt;node nodeTypeAlias="Nyheder"&gt;
+            &lt;node nodeTypeAlias="NewsItem"&gt;
+                &lt;data alias="propertyNewsHeader"&gt;Dette er nyhed #1&lt;/data&gt;
+                &lt;data alias="propertyNewsSummary"&gt;Der er et par ting vi skal vide om...&lt;/data&gt;
+                &lt;data alias="propertyNewsLink"&gt;1201&lt;/data&gt;
+            &lt;/node&gt;
+            &lt;node nodeTypeAlias="NewsItem"&gt;
+                &lt;data alias="propertyNewsHeader"&gt;Dette er nyhed #2&lt;/data&gt;
+                &lt;data alias="propertyNewsSummary"&gt;Der er et par ting vi skal vide om...&lt;/data&gt;
+                &lt;data alias="propertyNewsLink"&gt;1202&lt;/data&gt;
+            &lt;/node&gt;
+            &lt;node nodeTypeAlias="NewsItem"&gt;
+                &lt;data alias="propertyNewsHeader"&gt;Dette er nyhed #3&lt;/data&gt;
+                &lt;data alias="propertyNewsSummary"&gt;Der er et par ting vi skal vide om...&lt;/data&gt;
+                &lt;data alias="propertyNewsLink"&gt;1203&lt;/data&gt;
+            &lt;/node&gt;
+        &lt;/node&gt;
+    &lt;/node&gt;
+&lt;/root&gt;
+</code></pre>
+
+	<h3>File: &#8220;fixture_newslist_4-5.xml&#8221; (new schema)</h3>
+
+<pre><code>&lt;root id="-1"&gt;
+    &lt;Site isDoc="" level="1"&gt;   
+        &lt;Nyheder isDoc=""&gt;
+            &lt;NewsItem isDoc=""&gt;
+                &lt;propertyNewsHeader&gt;Dette er nyhed #1&lt;/propertyNewsHeader&gt;
+                &lt;propertyNewsSummary&gt;Der er et par ting vi skal vide om...&lt;/propertyNewsSummary&gt;
+                &lt;propertyNewsLink&gt;1201&lt;/propertyNewsLink&gt;
+            &lt;/NewsItem&gt;
+            &lt;NewsItem isDoc=""&gt;
+                &lt;propertyNewsHeader&gt;Dette er nyhed #2&lt;/propertyNewsHeader&gt;
+                &lt;propertyNewsSummary&gt;Der er et par ting vi skal vide om...&lt;/propertyNewsSummary&gt;
+                &lt;propertyNewsLink&gt;1202&lt;/propertyNewsLink&gt;
+            &lt;/NewsItem&gt;
+            &lt;NewsItem isDoc=""&gt;
+                &lt;propertyNewsHeader&gt;Dette er nyhed #3&lt;/propertyNewsHeader&gt;
+                &lt;propertyNewsSummary&gt;Der er et par ting vi skal vide om...&lt;/propertyNewsSummary&gt;
+                &lt;propertyNewsLink&gt;1203&lt;/propertyNewsLink&gt;
+            &lt;/NewsItem&gt;
+        &lt;/Nyheder&gt;
+    &lt;/Site&gt;
+&lt;/root&gt;
+</code></pre>
+
+	<p>(Yes, I created the second one by transforming the first with <a href="legacy2new.xslt" title="A very simple stylesheet to transform from the old legacy-format to the new schema">this stylesheet</a>)</p>
+
+	<h2>First test run should fail</h2>
+
+	<p>Since I started with the original file, the first test run should obviously fail for the second scenario, which it did:</p>
+
+	<p class="figure"><img src="xspec_1.png" alt="Failed test in XSpec" title="The first test failed in XSpec, as expected" /></p>
+
+	<p>Here&#8217;s a fail before the final change, with a diff for where the output is erroneous:</p>
+
+	<p class="figure"><img src="xspec_2.png" alt="Failed test when href of link is generated empty" title="The href isn&#8217;t converted yet, so fails" /></p>
+
+	<p>Finally, when everything has been converted to be version-independent, we have &#8220;green bars&#8221;:</p>
+
+	<p class="figure"><img src="xspec_3.png" alt="All tests pass" title="All (both) tests are passing" /></p>
+
+	<p>If you&#8217;re still here, I actually think <span title="#h5yr">you rock</span>.</p>
+
+	<p>Now, I don&#8217;t do all of my XSLT development this way, but this was such a clear-cut case for dusting off XSpec that I couldn&#8217;t resist. Maybe you&#8217;ve been intrigued to try it for a project some time? You might actually like it.</p>
+
+	<p>Really, this is the end&#8212;see you next time!</p>
+	
+</div><!-- #article -->
+
+<div id="footer">
+	Copyright &copy; 2010 <a href="http://greystate.dk/who/" rel="author">Chriztian Steinmeier</a> for <a href="http://pimpmyxslt.com/">Pimp My XSLT</a>.
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11788998-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>

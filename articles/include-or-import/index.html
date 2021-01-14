@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Learn the difference between the xsl:include and xsl:import instructions. Article for 'Pimp My XSLT'." />
+	<meta name="viewport" content="width=device-width" />
+	<!--
+		Copyright 2010 by Chriztian Steinmeier, http://greystate.dk/	
+	-->
+	<title>xsl:include or xsl:import? @ Pimp My XSLT</title>
+	<link rel="stylesheet" href="../pimp-article.css" type="text/css" media="screen" charset="utf-8" />
+
+	<link rel="previous" href="/articles/multiple-formats/" />
+	<link rel="index" href="/articles/" />
+
+	<link rel="canonical" href="/articles/include-or-import/" />
+	
+	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+
+<div class="article">
+	<h1>&lt;xsl:include&gt; or &lt;xsl:import&gt;?</h1>
+	<p class="credit">
+		Written by <a href="http://greystate.dk/">Chriztian Steinmeier</a>.<br />
+		Got comments? I&#8217;m <a href="http://twitter.com/greystate" rel="external">@greystate</a> on Twitter.
+		<a href="/articles/" rel="index">&#x2190; Back to Article Index</a>
+	</p>
+	<div class="intro">
+		<p>
+			I&#8217;ve been asked about how to include and reuse XSLT in multiple files a number of times,
+			so I thought it would make a good candidate for a new &#8216;Pimp My XSLT&#8217; article. Enjoy, and don&#8217;t
+			hesitate to ping me on twitter if you like/hate it!
+		</p>
+	</div>
+	
+	<p>
+		When you&#8217;ve got some kind of functionality that&#8217;s ripe for reuse, you can choose between two similar
+		ways of bringing that functionality from a separate stylesheet file into any other stylesheet, when needed.
+	</p>
+
+	<h2>&lt;xsl:include href=&#8221;&#8230;&#8221; /&gt;</h2>
+
+	<p>
+		The first is using the <code>xsl:include</code> instruction, and you simply put it where you&#8217;d like the included templates
+		to be, if you were to just copy and paste them right into the new file.
+	</p>
+
+	<p>
+		So I have this file &#8212; MediaHelper.xslt &#8212; with some templates to handle the &#8220;GetMedia Dance&#8221;
+		of getting the node from the Media section etc. Here&#8217;s the basic idea:
+	</p>
+
+	<h3>File: MediaHelper.xslt</h3>
+
+	<script src="https://gist.github.com/938971.js?file=include-or-import-01.xslt"></script>
+
+	<p>
+		I can use the Media Helper above by including it in my new shiny &#8220;Render Page Image&#8221; macro:
+	</p>
+
+	<h3>File: RenderPageImage.xslt</h3>
+
+	<script src="https://gist.github.com/938971.js?file=include-or-import-02.xslt"></script>
+
+	<p>
+		Great - now all my macros can have simple media rendering, just by including that one file.
+		And if I need to support PDF files as well, I can choose to add a simple template to either of those files,
+		depending on whether it&#8217;s only for that specific project (in the macro) or more generally (in the helper):
+	</p>
+
+	<h3>Template: PDF file rendering</h3>
+	
+	<script src="https://gist.github.com/938971.js?file=include-or-import-03.xslt"></script>
+
+	<p>
+		Because <code>xsl:include</code> inserts the templates at the point of which the instruction is placed, it&#8217;s easy
+		to override a template in the included file, just by placing it <em>after</em> the <code>xsl:include</code> instruction, e.g.:
+	</p>
+
+	<h3>File: RenderVersionedPageImage.xslt</h3>
+
+	<script src="https://gist.github.com/938971.js?file=include-or-import-04.xslt"></script>
+
+	<p>
+		(If two templates in the same stylesheet end up matching the same element, the last one defined will
+		effectively &#8220;win&#8221; the precedence battle for that element).
+	</p>
+
+
+	<blockquote>
+	  <p>So what&#8217;s the need for another option, then? You said there were two ways of doing this&#8230;</p>
+	</blockquote>
+
+	<hr />
+	
+	<h2 id="lost">&lt;xsl:import href=&quot;&#8230;&quot; /&gt;</h2>
+
+	<p>
+		Okay, right.
+		So - let&#8217;s say you&#8217;re  on this new project and there&#8217;s some strict policy that all images
+		and files must be served wrapped in a pair of comments, stating the &#8216;last updated&#8217; date and the user who saved it (obviously
+		for reasons you are not cleared to know about. &#8220;Just do it&#8221;, you&#8217;re told), e.g. like this:
+	</p>
+
+	<script src="https://gist.github.com/938971.js?file=include-or-import-05.html"></script>
+
+	<p>
+		You could of course just copy the <strong>Image</strong> and <strong>File</strong> templates to the main file, and place them after the include instruction, like
+		we did in the example above, and then add the secret comments to both template copies.
+	</p>
+
+	<p>
+		You could, however, also try the <code>xsl:import</code> instruction instead, as it lets you do something a little smarter,
+		ridding your precious and modular code from the horror that is duplication. <abbr title="Don&#8217;t Repeat Youself">DRY</abbr>, they say&#8230;
+	</p>
+
+	<p>
+		Using the <code>xsl:import</code> instruction is just as easy as with <code>xsl:include</code>, though it has to
+		go <strong>before</strong> any other childnode of the main stylesheet.
+	</p>
+
+	<h3>File: RenderTimeStampedImages.xslt</h3>
+
+	<script src="https://gist.github.com/938971.js?file=include-or-import-06.xslt"></script>
+
+	<p>
+		As you can see, using the <code>xsl:import</code> instruction lets you override the imported templates, but at the same time,
+		has the ability to execute the original, preserving its context, via the <code>xsl:apply-imports</code> instruction.
+	</p>
+
+	<hr />
+
+	<p>
+		So there you have it - two ways to include common functionality from another stylesheet, thus making it easier to
+		reuse some of the code you&#8217;ve already written. Hopefully this will help you decide which of the two
+		to choose, from project to project.
+	</p>
+
+	<p class="critical">
+		Regardless what method you choose, be sure to install <a href="http://our.umbraco.org/projects/developer-tools/xsltouch" title="Go get the brilliant XSLTouchnow!">XSLTouch</a>
+		if you&#8217;re using Umbraco/.NET, to not have to worry about remembering to save the main file when you change something in the includes (!)
+	</p>
+
+	<p>Thanks for reading all the way down here, and for putting up with all the LOST references :-)</p>
+
+	<p>
+		See you at the 1st annual <a href="http://our.umbraco.org/events/xslt-ping-pong-fest" title="Get really nitty-gritty with XSLT...">XSLT Ping Pong Fest</a>
+		in Copenhagen on November 20th!
+	</p>
+	
+	
+</div><!-- #article -->
+
+<div id="footer">
+	Copyright &copy; 2010 <a href="http://greystate.dk/who/" rel="author">Chriztian Steinmeier</a> for <a href="http://pimpmyxslt.com/">Pimp My XSLT</a>.
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11788998-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>
