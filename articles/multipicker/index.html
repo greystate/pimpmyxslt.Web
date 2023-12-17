@@ -1,21 +1,21 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-	
+
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 	<meta name="description" content="Using XSLT keys to handle the Multi-Node Tree Picker from the uComponents package for Umbraco. Article for 'Pimp My XSLT'." />
 	<meta name="viewport" content="width=device-width" />
 	<!--
-		Copyright 2011 by Chriztian Steinmeier, http://greystate.dk/	
+		Copyright 2011 by Chriztian Steinmeier, http://greystate.dk/
 	-->
 	<title>Using the Multi-Node Tree Picker in XSLT @ Pimp My XSLT</title>
 	<link rel="stylesheet" href="../pimp-article.css" type="text/css" media="screen" charset="utf-8" />
-	
+
 	<link rel="index" href="/articles/" />
 
 	<link rel="canonical" href="/articles/multipicker/" />
-	
+
 	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
 	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 </head>
@@ -32,7 +32,7 @@
 		<p>The Multi-Node Tree Picker in the <a href="http://ucomponents.codeplex.com">uComponents</a> package is a fantastic Data Type and one of the most versatile additions to Umbraco. You can (and probably already do) use it for a bunch of stuff; pretty much everywhere your content editors need to be able pick something (and/or maybe only particular types of things) and then easily modify their selections later, it&#8217;s an invaluable tool.</p>
 		<p>This article will show you an efficient way of rendering the contents of this Data Type, by way of using XSLT keys.</p>
 	</div>
-	
+
 
 	<p>You have the choice of storing the picked items as CSV data or XML, but I don&#8217;t see a choice there &#8212; of course I&#8217;m going for XML; and you probably will too, when I&#8217;ve shown you how ridiculously easy it is to handle every kind of Document Type you&#8217;ve allowed your editors to pick&#8230; Welcome to another Pimp My XSLT article!</p>
 
@@ -81,7 +81,7 @@
 	<ul>
 	<li>The frontend code for the BlogPost&#8217;s date says &#8220;Yesterday&#8221; - that&#8217;s definitely going to take some computation, so shouldn&#8217;t be put right in the template (even in C#/Razor I&#8217;d say it&#8217;s a helper of some sorts.)</li>
 	<li>Likewise for the Markdown Editor output - the purpose (for me) of using that control instead of the regular Rich Text Editor, is to have much better control over the output, so even though my simple example could easily do with a simple copy-of, I&#8217;m handing it over already.</li>
-	<li>If you&#8217;ve read the <a href="http://pimpmyxslt.com/articles/include-or-import/">include or import</a> article you may remember the &#8220;_MediaHelper.xslt&#8221; file - I&#8217;m using this for media stuff, so the Video element is partially handled by that (with some overrides).</li>
+	<li>If you&#8217;ve read the <a href="/articles/include-or-import/">include or import</a> article you may remember the &#8220;_MediaHelper.xslt&#8221; file - I&#8217;m using this for media stuff, so the Video element is partially handled by that (with some overrides).</li>
 	</ul>
 
 	<h2>Iteration 1</h2>
@@ -172,7 +172,7 @@
 
 	<p>You can also download the <a href="multipicker-complete.zip" title="Download project files" type="application/zip">complete project files</a> here for further scrutiny. Be warned - there are entities the size of kittens in there! :-)</p>
 
-	<p>Please enjoy, and a huge thanks goes to <strong>you</strong> for returning to pimpmyxslt.com so often!</p>
+	<p>Please enjoy, and a huge thanks goes to <strong>you</strong> for returning to xslt.dk so often!</p>
 
 	<hr />
 
@@ -187,16 +187,16 @@
 	            <a href="#f2-markdown-l" title="Back">&#x2191;</a>
 	        </li>
 	        <li id="f3-performance">
-	            I have not run any tests on this yet, though. 
+	            I have not run any tests on this yet, though.
 	            <a href="#f3-performance-l" title="Back">&#x2191;</a>
 	        </li>
 	    </ol>
 	</div>
-	
+
 </div><!-- #article -->
 
 <div id="footer">
-	Copyright &copy; 2011 <a href="http://greystate.dk/who/" rel="author">Chriztian Steinmeier</a> for <a href="http://pimpmyxslt.com/">Pimp My XSLT</a>.
+	Copyright &copy; 2011 <a href="http://greystate.dk/who/" rel="author">Chriztian Steinmeier</a> for <a href="https://xslt.dk/">Pimp My XSLT</a>.
 </div>
 
 

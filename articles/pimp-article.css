@@ -1,9 +1,9 @@
-/* 
+/*
     pimp-article.css
     Pimp My XSLT
-    
+
     Created by Chriztian Steinmeier on 2010-04-04.
-    Copyright 2010 pimpmyxslt.com. All rights reserved.
+    Copyright 2010 All rights reserved.
 */
 
 body {
@@ -18,7 +18,7 @@ div.article, div#footer {
 	margin: auto;
 }
 
-h1, h2 { 
+h1, h2 {
 	font-family: Palatino, Georgia, Times, serif;
 	color: #204089;
 	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -75,7 +75,7 @@ p.figure {
 	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px;
 	border-radius: 6px;
-	
+
 	-webkit-box-shadow: 0 0 4px rgba(0, 0, 0, 0.75) inset;
 	-moz-box-shadow: 0 0 4px rgba(0, 0, 0, 0.75) inset;
 	box-shadow: 0 0 4px rgba(0, 0, 0, 0.75) inset;
@@ -83,7 +83,7 @@ p.figure {
 	padding: 6px;
 	background-color: #fff;
 	text-align: center;
-	
+
 	margin-bottom: 3em;
 }
 
@@ -97,7 +97,7 @@ div.explain {
 	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px;
 	border-radius: 6px;
-	
+
 	-webkit-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.75);
 	-moz-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.75);
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.75);
@@ -232,7 +232,7 @@ div#footer {
 
 /* And of course the LOST targets :-) */
 #lost:target {
-	
+
 }
 
 #lost:target::after {
