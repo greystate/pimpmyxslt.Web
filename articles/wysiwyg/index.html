@@ -1,21 +1,21 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-	
+
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 	<meta name="description" content="Unlocking the CDATA-trapped WYSIWYG editor for transforming with XSLT. Article for 'Pimp My XSLT'." />
 	<meta name="viewport" content="width=device-width" />
 	<!--
-		Copyright 2012 by Chriztian Steinmeier, http://greystate.dk/	
+		Copyright 2012 by Chriztian Steinmeier, http://greystate.dk/
 	-->
 	<title>Transforming WYSIWYG output with XSLT @ Pimp My XSLT</title>
 	<link rel="stylesheet" href="../pimp-article.css" type="text/css" media="screen" charset="utf-8" />
-	
+
 	<link rel="index" href="/articles/" />
 
 	<link rel="canonical" href="/articles/wysiwyg/" />
-	
+
 	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
 	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 </head>
@@ -35,7 +35,7 @@
 			<span onclick="alert(this.getAttribute('title'))" style="cursor: help" title="Yep - you got it, it's the &#8216;dash-rocket&#8217; from CoffeeScript making a cameo appearance!">-&gt;</span>
 		</p>
 	</div>
-	
+
 	<p>One thing I really don&#8217;t get about the WYSIWYG editor found in various Content Management Systems, is the fact that when its
 	contents are saved, they&#8217;re saved as a string of XHTML, wrapped in a strange construct called a <strong>CDATA Section</strong>, which makes
 	it useless in an XSLT context - think about that for a second: The actual <em>content</em> is stored in the <em>least flexible way,</em>
@@ -90,8 +90,8 @@
 
 	<p>There&#8217;s a nice little extension in the <code>ucomponents.xml</code> namespace, called <code>ParseXhtml()</code> <sup id="f1-link"><a href="#f1-methodnames">[1]</a></sup> which simply
 	takes care of converting a string of XHTML into XML, for use in our XSLT. And thanks to <a href="http://twitter.com/leekelleher/">Lee Kelleher</a>, the following paragraph
-	is now hollow and empty, due to him fixing the caveats I ran into with thefirst iteration - and you won&#8217;t have to wade
-	through <a href="http://pimpmyxslt.com/articles/entity-tricks-part1/">entities</a> &#8220;the size of gorillas&#8221; to understand what was going on. Yay Lee, #h5yr! :-)</p>
+	is now hollow and empty, due to him fixing the caveats I ran into with the first iteration - and you won&#8217;t have to wade
+	through <a href="/articles/entity-tricks-part1/">entities</a> &#8220;the size of gorillas&#8221; to understand what was going on. Yay Lee, #h5yr! :-)</p>
 
 	<pre><code>&lt;p&gt;&amp;nbsp;&lt;/p&gt;</code></pre>
 
@@ -118,7 +118,7 @@
 	<h3>_WYSIWYG.xslt</h3>
 
 	<script src="https://gist.github.com/1871555.js?file=wysiwyg-03.xslt"></script>
-	
+
 	<hr />
 
 	<h2>But why even bother?</h2>
@@ -194,7 +194,7 @@
 	        </li>
 	    </ol>
 	</div>
-	
+
 </div><!-- #article -->
 
 <div id="footer">

@@ -1,22 +1,22 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-	
+
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 	<meta name="description" content="Learn how to provide support for both of the XML schemas in Umbraco in a single XSLT file. Article for 'Pimp My XSLT'." />
 	<meta name="viewport" content="width=device-width" />
 	<!--
-		Copyright 2010 by Chriztian Steinmeier, http://greystate.dk/	
+		Copyright 2010 by Chriztian Steinmeier, http://greystate.dk/
 	-->
 	<title>Supporting Multiple Formats In One XSLT File @ Pimp My XSLT</title>
 	<link rel="stylesheet" href="../pimp-article.css" type="text/css" media="screen" charset="utf-8" />
-	
+
 	<link rel="previous" href="/articles/match-templates-intro/" />
 	<link rel="index" href="/articles/" />
 
 	<link rel="canonical" href="/articles/multiple-formats/" />
-	
+
 	<script type="text/javascript" src="http://use.typekit.com/kgk6bwd.js"></script>
 	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 </head>
@@ -37,7 +37,7 @@
 	</div>
 
 	<p>If you&#8217;re not familiar with the &#8220;match templates&#8221; approach to XSLT (as opposed to &#8220;for-each&#8221;) I suggest you
-	<a href="http://pimpmyxslt.com/articles/match-templates-intro/">swing by that article</a> first, to fully understand what I&#8217;m doing here (and why).</p>
+	<a href="/articles/match-templates-intro/">swing by that article</a> first, to fully understand what I&#8217;m doing here (and why).</p>
 
 	<p>Once again, I&#8217;ll be refactoring an XSLT file (this time from a real project I worked on) that renders a list of News items:</p>
 
@@ -369,7 +369,7 @@
 	<h3>File: &#8220;fixture_newslist_4-0.xml&#8221; (legacy-format)</h3>
 
 <pre><code>&lt;root id="-1"&gt;
-    &lt;node level="1" nodeTypeAlias="Site"&gt;   
+    &lt;node level="1" nodeTypeAlias="Site"&gt;
         &lt;node nodeTypeAlias="Nyheder"&gt;
             &lt;node nodeTypeAlias="NewsItem"&gt;
                 &lt;data alias="propertyNewsHeader"&gt;Dette er nyhed #1&lt;/data&gt;
@@ -394,7 +394,7 @@
 	<h3>File: &#8220;fixture_newslist_4-5.xml&#8221; (new schema)</h3>
 
 <pre><code>&lt;root id="-1"&gt;
-    &lt;Site isDoc="" level="1"&gt;   
+    &lt;Site isDoc="" level="1"&gt;
         &lt;Nyheder isDoc=""&gt;
             &lt;NewsItem isDoc=""&gt;
                 &lt;propertyNewsHeader&gt;Dette er nyhed #1&lt;/propertyNewsHeader&gt;
@@ -437,7 +437,7 @@
 	<p>Now, I don&#8217;t do all of my XSLT development this way, but this was such a clear-cut case for dusting off XSpec that I couldn&#8217;t resist. Maybe you&#8217;ve been intrigued to try it for a project some time? You might actually like it.</p>
 
 	<p>Really, this is the end&#8212;see you next time!</p>
-	
+
 </div><!-- #article -->
 
 <div id="footer">
